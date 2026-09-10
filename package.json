@@ -1,0 +1,35 @@
+{
+  "name": "audify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Audify - Professional Web Audio workstation for automatic silence removal, waveform slicing, batch loudness normalization (LUFS/EBU R128), and spectral analytics.",
+  "homepage": "https://dreamjourneybd.github.io/Audify",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build && gh-pages -d dist -m 'Manual deploy to GitHub Pages'",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "@google/genai": "^2.4.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.3.0",
+    "tailwindcss": "^4.1.14",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
+  }
+}

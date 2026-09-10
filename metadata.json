@@ -1,0 +1,6 @@
+{
+  "name": "Audify",
+  "description": "Professional Web Audio workstation for automatic silence removal, waveform editing, batch loudness normalization (LUFS/EBU R128), and spectral analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" fill="none">
+  <defs>
+    <linearGradient id="bg-canvas" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141415" />
+      <stop offset="100%" stop-color="#09090B" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="40%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="gold-accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="800" height="200" rx="24" fill="url(#bg-canvas)" stroke="#27272A" stroke-width="2" />
+  
+  <!-- Subtle Background Grid Accent -->
+  <g opacity="0.12" stroke="#A1A1AA" stroke-width="1">
+    <line x1="20" y1="40" x2="780" y2="40" stroke-dasharray="4 6" />
+    <line x1="20" y1="80" x2="780" y2="80" stroke-dasharray="4 6" />
+    <line x1="20" y1="120" x2="780" y2="120" stroke-dasharray="4 6" />
+    <line x1="20" y1="160" x2="780" y2="160" stroke-dasharray="4 6" />
+  </g>
+
+  <!-- Icon Mark / Squircle Container -->
+  <g transform="translate(48, 40)">
+    <rect width="120" height="120" rx="28" fill="#18181B" stroke="#3F3F46" stroke-width="1.5" />
+    
+    <!-- Sound Waves with Amber/Gold Glow -->
+    <rect x="22" y="44" width="8" height="32" rx="4" fill="url(#gold-accent)" opacity="0.6" />
+    <rect x="36" y="30" width="8" height="60" rx="4" fill="url(#gold-accent)" opacity="0.85" />
+    <rect x="50" y="18" width="10" height="84" rx="5" fill="url(#gold-grad)" filter="url(#glow)" />
+    <rect x="66" y="28" width="8" height="64" rx="4" fill="url(#gold-accent)" opacity="0.9" />
+    <rect x="80" y="40" width="8" height="40" rx="4" fill="url(#gold-accent)" opacity="0.7" />
+    <rect x="94" y="50" width="6" height="20" rx="3" fill="url(#gold-accent)" opacity="0.45" />
+
+    <!-- Center Precision Indicator -->
+    <circle cx="55" cy="60" r="3" fill="#FFFFFF" />
+  </g>
+
+  <!-- Logotype & Branding Text -->
+  <g transform="translate(196, 75)">
+    <!-- Audify -->
+    <text x="0" y="24" fill="#F4F4F5" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="46" font-weight="800" letter-spacing="-1">Audify</text>
+    
+    <!-- Pro Badge -->
+    <g transform="translate(160, -4)">
+      <rect width="66" height="34" rx="8" fill="#F59E0B" fill-opacity="0.15" stroke="#F59E0B" stroke-width="1.5" />
+      <text x="33" y="23" fill="#FBBF24" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="700" letter-spacing="1" text-anchor="middle">PRO</text>
+    </g>
+
+    <!-- Subtitle / Tagline -->
+    <text x="0" y="60" fill="#A1A1AA" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="500" letter-spacing="-0.2">
+      Web Audio Silence Removal, Waveform Slicing &amp; Normalization Workstation
+    </text>
+  </g>
+
+  <!-- Spec Tag Pills on the Right -->
+  <g transform="translate(580, 52)">
+    <rect width="170" height="26" rx="13" fill="#18181B" stroke="#27272A" />
+    <circle cx="14" cy="13" r="4" fill="#10B981" />
+    <text x="26" y="17" fill="#D4D4D8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500">100% Client-Side</text>
+  </g>
+  <g transform="translate(580, 86)">
+    <rect width="170" height="26" rx="13" fill="#18181B" stroke="#27272A" />
+    <circle cx="14" cy="13" r="4" fill="#F59E0B" />
+    <text x="26" y="17" fill="#D4D4D8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500">ITU-R BS.1770 LUFS</text>
+  </g>
+  <g transform="translate(580, 120)">
+    <rect width="170" height="26" rx="13" fill="#18181B" stroke="#27272A" />
+    <circle cx="14" cy="13" r="4" fill="#6366F1" />
+    <text x="26" y="17" fill="#D4D4D8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500">Lossless WAV &amp; MP3</text>
+  </g>
+</svg>
