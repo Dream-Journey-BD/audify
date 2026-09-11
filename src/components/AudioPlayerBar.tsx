@@ -6,6 +6,7 @@ import {
   Repeat,
   FileArchive,
   Tag,
+  RotateCcw,
 } from 'lucide-react';
 import { AppLanguage, AudioSegment } from '../types';
 import { translations } from '../utils/translations';
@@ -26,6 +27,7 @@ interface AudioPlayerBarProps {
   onChangeVolume?: (vol: number) => void;
   onOpenExportModal: () => void;
   onOpenAudioMetadata?: () => void;
+  onReset?: () => void;
 }
 
 export const AudioPlayerBar: React.FC<AudioPlayerBarProps> = ({
@@ -40,6 +42,7 @@ export const AudioPlayerBar: React.FC<AudioPlayerBarProps> = ({
   onToggleLoop,
   onOpenExportModal,
   onOpenAudioMetadata,
+  onReset,
 }) => {
   const t = translations[lang] || translations.en;
   const activeCount = segments.filter((s) => s.enabled).length;
@@ -104,8 +107,21 @@ export const AudioPlayerBar: React.FC<AudioPlayerBarProps> = ({
           </div>
         </div>
 
-        {/* Action Controls in Same Unified Row: Metadata & Export */}
+        {/* Action Controls in Same Unified Row: Reset, Metadata & Export */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto sm:ml-0">
+          {onReset && (
+            <button
+              id="slicer-bottom-reset-btn"
+              type="button"
+              onClick={onReset}
+              className="h-10 sm:h-11 inline-flex items-center justify-center gap-1.5 px-3 sm:px-3.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-700 transition-colors cursor-pointer shadow-sm"
+              title={t.newFile || 'Reset Audio'}
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+              <span>{t.newFile || 'Reset'}</span>
+            </button>
+          )}
+
           {onOpenAudioMetadata && (
             <button
               id="open-audio-metadata-btn"

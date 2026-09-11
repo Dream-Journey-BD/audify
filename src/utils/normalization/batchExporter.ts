@@ -68,8 +68,23 @@ export async function exportNormalizedBatchZip(
     const buf = item.normalizedBuffer || item.originalBuffer;
     const blob =
       exportCfg.format === 'mp3'
-        ? await audioBufferToMp3BlobAsync(buf, exportCfg.mp3Bitrate)
-        : await audioBufferToWavBlobAsync(buf);
+        ? await audioBufferToMp3BlobAsync(
+            buf,
+            exportCfg.mp3Bitrate,
+            (encPct) => {
+              const currentItemPct = basePct + Math.round((encPct / 100) * (85 / total));
+              onProgress?.(Math.min(85, currentItemPct), `Encoding ${outName}...`);
+            },
+            shouldCancel
+          )
+        : await audioBufferToWavBlobAsync(
+            buf,
+            (encPct) => {
+              const currentItemPct = basePct + Math.round((encPct / 100) * (85 / total));
+              onProgress?.(Math.min(85, currentItemPct), `Encoding ${outName}...`);
+            },
+            shouldCancel
+          );
 
     folder.file(outName, blob);
     await yieldToMain();
@@ -95,12 +110,19 @@ export async function exportNormalizedBatchZip(
     onProgress(88, 'Packaging ZIP archive...');
   }
 
-  const zipBlob = await zip.generateAsync({ type: 'blob' }, (metadata) => {
-    if (onProgress) {
-      const p = 85 + Math.round(metadata.percent * 0.15);
-      onProgress(Math.min(99, p), 'Packaging ZIP archive...');
+  const zipBlob = await zip.generateAsync(
+    {
+      type: 'blob',
+      compression: exportCfg.format === 'mp3' ? 'STORE' : 'DEFLATE',
+      compressionOptions: { level: 1 },
+    },
+    (metadata) => {
+      if (onProgress) {
+        const p = 85 + Math.round(metadata.percent * 0.15);
+        onProgress(Math.min(99, p), 'Packaging ZIP archive...');
+      }
     }
-  });
+  );
 
   onProgress?.(100, 'Complete');
   return zipBlob;

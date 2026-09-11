@@ -57,7 +57,7 @@ export const VoiceBatchToolbar: React.FC<VoiceBatchToolbarProps> = ({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search voice clips by name..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-neutral-950 border border-neutral-800 text-neutral-200 placeholder-neutral-500 text-xs focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-neutral-950 border border-neutral-800 text-neutral-200 placeholder-neutral-500 text-xs focus:outline-none focus:border-violet-500"
             />
           </div>
 
@@ -66,7 +66,7 @@ export const VoiceBatchToolbar: React.FC<VoiceBatchToolbarProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition text-xs font-medium cursor-pointer shrink-0"
           >
             {selectedCount === totalItemsCount && totalItemsCount > 0 ? (
-              <CheckSquare className="w-3.5 h-3.5 text-amber-400" />
+              <CheckSquare className="w-3.5 h-3.5 text-violet-400" />
             ) : (
               <SquareIcon className="w-3.5 h-3.5 text-neutral-500" />
             )}
@@ -74,7 +74,7 @@ export const VoiceBatchToolbar: React.FC<VoiceBatchToolbarProps> = ({
           </button>
 
           {selectedCount > 0 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-xs font-semibold shrink-0">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-violet-500/15 border border-violet-500/30 text-violet-300 font-mono text-xs font-semibold shrink-0">
               <span>{selectedCount}</span>
               <span className="hidden sm:inline">selected</span>
             </span>
@@ -128,9 +128,9 @@ export const VoiceBatchToolbar: React.FC<VoiceBatchToolbarProps> = ({
           <button
             onClick={onNormalizeSelected}
             disabled={isProcessing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/30 font-semibold transition cursor-pointer disabled:opacity-50"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-violet-400" />
             <span>Level Selected</span>
           </button>
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { AudioSegment, AppLanguage, GlobalEffects, ExportSettings } from '../types';
 import { translations } from '../utils/translations';
 import { SegmentBatchActionBar } from './segments/SegmentBatchActionBar';
@@ -63,6 +63,8 @@ export const SegmentList: React.FC<SegmentListProps> = ({
   const [openMergedDropdownIds, setOpenMergedDropdownIds] = useState<Record<string, boolean>>({});
   const effectsHoverTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const mergedHoverTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const selectedSet = useMemo(() => new Set(selectedSegmentIds), [selectedSegmentIds]);
 
   useEffect(() => {
     return () => {
@@ -135,7 +137,7 @@ export const SegmentList: React.FC<SegmentListProps> = ({
             index={idx}
             totalSegments={segments.length}
             lang={lang}
-            isSelected={selectedSegmentIds.includes(seg.id) || activeSegmentId === seg.id}
+            isSelected={selectedSet.has(seg.id) || activeSegmentId === seg.id}
             isPlaying={playingSegmentId === seg.id && !playingSubPartKey}
             playingSubPartKey={playingSubPartKey}
             totalDuration={totalDuration}

@@ -15,6 +15,7 @@ import {
   audioBufferToMp3BlobAsync,
 } from '../../utils/audioEngine';
 import { yieldToMain } from '../../utils/asyncScheduler';
+import { decodeAudioFile } from '../../utils/audio/context';
 import { IntelligencePlayerBar } from './IntelligencePlayerBar';
 import { NormalizationControlBar } from './NormalizationControlBar';
 import { AudioBatchItemCard } from './AudioBatchItemCard';
@@ -30,12 +31,14 @@ interface LoudnessIntelligenceSuiteProps {
   currentStudioFileName?: string;
   lang?: AppLanguage;
   onImportToStudio?: (buffer: AudioBuffer, name: string) => void;
+  onRegisterReset?: (resetFn: () => void) => void;
 }
 
 export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps> = ({
   currentStudioBuffer,
   currentStudioFileName,
   lang,
+  onRegisterReset,
 }) => {
   const [items, setItems] = useState<BatchAudioItem[]>([]);
   const [target, setTarget] = useState<NormalizationTarget>({
@@ -228,6 +231,23 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
     setPlayingId(null);
   }, []);
 
+  // Reset all Voice Leveler state
+  const handleResetAll = useCallback(() => {
+    stopPlayback();
+    setItems([]);
+    setCurrentPage(1);
+    setIsExportModalOpen(false);
+    setIsComparisonOpen(false);
+    setIsNormalizeModalOpen(false);
+  }, [stopPlayback]);
+
+  // Register reset function for top header shortcut
+  useEffect(() => {
+    if (onRegisterReset) {
+      onRegisterReset(handleResetAll);
+    }
+  }, [onRegisterReset, handleResetAll]);
+
   // Play an item with live audition chain
   const playItemBuffer = useCallback(
     (id: string, source: 'original' | 'normalized', onEnded?: () => void) => {
@@ -337,8 +357,7 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
       setImportProgress({ current: i + 1, total, name: file.name });
 
       try {
-        const arrayBuf = await file.arrayBuffer();
-        const decoded = await ctx.decodeAudioData(arrayBuf);
+        const decoded = await decodeAudioFile(file);
         const analytics = await analyzeAudioBuffer(decoded);
 
         accumulated.push({
@@ -784,11 +803,7 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
           onOpenExportModal={() => setIsExportModalOpen(true)}
           onOpenComparison={() => setIsComparisonOpen(true)}
           onAddFiles={() => addFileInputRef.current?.click()}
-          onResetFiles={() => {
-            stopPlayback();
-            setItems([]);
-            setCurrentPage(1);
-          }}
+          onResetFiles={handleResetAll}
           lang={lang}
           isProcessing={isProcessing}
           totalCount={items.length}
@@ -876,6 +891,7 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
           onToggleSource={(src) => setPlaybackSource(src)}
           onChangeVolume={setMasterVolume}
           onOpenExportModal={() => setIsExportModalOpen(true)}
+          onResetFiles={handleResetAll}
         />
       )}
 

@@ -50,7 +50,26 @@ export interface ExportSettings {
 
 export type AppLanguage = 'bn' | 'en';
 
-export type AppActiveTab = 'slicer' | 'intelligence';
+export type AppActiveTab = 'slicer' | 'intelligence' | 'tg-voice';
+
+export interface TgVoiceItem {
+  id: string;
+  file: File;
+  originalName: string;
+  outputName: string;
+  size: number;
+  duration: number;
+  originalChannels: number;
+  originalSampleRate: number;
+  originalBitrate?: number;
+  selectedBitrate?: number | 'original';
+  status: 'pending' | 'processing' | 'ready' | 'error';
+  progress: number;
+  error?: string;
+  audioBuffer?: AudioBuffer;
+  oggBlob?: Blob;
+  waveformPeaks?: number[];
+}
 
 export interface AudioMetadata {
   name: string;

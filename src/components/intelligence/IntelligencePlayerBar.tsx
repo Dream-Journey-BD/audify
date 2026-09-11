@@ -6,6 +6,7 @@ import {
   Repeat,
   FileArchive,
   Activity,
+  RotateCcw,
 } from 'lucide-react';
 import { AppLanguage } from '../../types';
 import { translations } from '../../utils/translations';
@@ -27,6 +28,7 @@ interface IntelligencePlayerBarProps {
   onToggleSource?: (src: 'original' | 'normalized') => void;
   onChangeVolume?: (vol: number) => void;
   onOpenExportModal: () => void;
+  onResetFiles?: () => void;
 }
 
 export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
@@ -39,6 +41,7 @@ export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
   onStop,
   onToggleSequential,
   onOpenExportModal,
+  onResetFiles,
 }) => {
   const t = translations[lang || 'en'] || translations.en;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -128,8 +131,8 @@ export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
 
         if (isPlaying) {
           const grad = ctx.createLinearGradient(0, y, 0, height);
-          grad.addColorStop(0, '#f59e0b'); // amber-500
-          grad.addColorStop(1, '#b45309'); // amber-700
+          grad.addColorStop(0, '#8b5cf6'); // violet-500
+          grad.addColorStop(1, '#6d28d9'); // violet-700
           ctx.fillStyle = grad;
           ctx.beginPath();
           ctx.rect(x, y, barWidth, h);
@@ -168,7 +171,7 @@ export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
             id="intel-player-play-btn"
             type="button"
             onClick={onPlayPause}
-            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-950 font-bold flex items-center justify-center transition-transform active:scale-95 shadow-md shadow-amber-500/20 cursor-pointer shrink-0"
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold flex items-center justify-center transition-transform active:scale-95 shadow-md shadow-violet-500/20 cursor-pointer shrink-0"
             title={isPlaying ? t.pause : t.play}
           >
             {isPlaying ? (
@@ -196,13 +199,26 @@ export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
             onClick={onToggleSequential}
             className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center shrink-0 ${
               isSequential
-                ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 shadow-sm'
+                ? 'bg-violet-500/20 border-violet-500/40 text-violet-300 shadow-sm'
                 : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-200'
             }`}
             title="Play all voice clips consecutively in sequence"
           >
             <Repeat className="w-4 h-4" />
           </button>
+
+          {/* Reset All Tracks Button */}
+          {onResetFiles && (
+            <button
+              id="intel-bottom-reset-btn"
+              type="button"
+              onClick={onResetFiles}
+              className="p-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-rose-400 hover:border-rose-500/40 border border-neutral-700 transition-colors cursor-pointer shrink-0"
+              title="Reset Voice Leveler tracks"
+            >
+              <RotateCcw className="w-4 h-4 text-violet-400" />
+            </button>
+          )}
         </div>
 
         {/* Right: Export Workstation Button */}
@@ -211,7 +227,7 @@ export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
           type="button"
           onClick={onOpenExportModal}
           disabled={totalCount === 0}
-          className="shrink-0 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-neutral-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-transform active:scale-95 cursor-pointer disabled:opacity-50 whitespace-nowrap"
+          className="shrink-0 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-violet-500/20 transition-transform active:scale-95 cursor-pointer disabled:opacity-50 whitespace-nowrap"
         >
           <FileArchive className="w-4 h-4 fill-current shrink-0" />
           <span>Export</span>
@@ -226,7 +242,7 @@ export const IntelligencePlayerBar: React.FC<IntelligencePlayerBarProps> = ({
       >
         <Activity
           className={`w-4 h-4 shrink-0 transition-colors ${
-            isPlaying ? 'text-amber-400 animate-pulse' : 'text-neutral-500'
+            isPlaying ? 'text-violet-400 animate-pulse' : 'text-neutral-500'
           }`}
         />
         <canvas

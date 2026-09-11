@@ -31,7 +31,7 @@ export const BatchNormalizeProgressModal: React.FC<BatchNormalizeProgressModalPr
       <div className="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400">
               <Loader2 className="w-5 h-5 animate-spin" />
             </div>
             <div>
@@ -57,13 +57,13 @@ export const BatchNormalizeProgressModal: React.FC<BatchNormalizeProgressModalPr
         <div className="space-y-1.5">
           <div className="w-full h-2.5 rounded-full bg-neutral-800 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-150 rounded-full"
+              className="h-full bg-gradient-to-r from-violet-600 to-purple-600 transition-all duration-150 rounded-full"
               style={{ width: `${percent}%` }}
             />
           </div>
           <p className="text-xs font-mono text-neutral-400 truncate text-left">
             Current:{' '}
-            <span className="text-amber-300">{currentFileName || 'Processing...'}</span>
+            <span className="text-violet-300">{currentFileName || 'Processing...'}</span>
           </p>
         </div>
 

@@ -75,7 +75,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
     <div
       id={`batch-card-${item.id}`}
       className={`rounded-2xl bg-neutral-900 border transition-all duration-200 overflow-hidden shadow-md flex flex-col justify-between ${
-        item.isSelected ? 'border-amber-500/60 ring-1 ring-amber-500/30' : 'border-neutral-800'
+        item.isSelected ? 'border-violet-500/60 ring-1 ring-violet-500/30' : 'border-neutral-800'
       }`}
     >
       {/* Top Header: Line 1 (Checkbox + Title + Actions) & Line 2 (Play + Specs + Status) */}
@@ -87,11 +87,11 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
               type="checkbox"
               checked={!!item.isSelected}
               onChange={() => onToggleSelect(item.id)}
-              className="w-4 h-4 accent-amber-400 rounded cursor-pointer shrink-0"
+              className="w-4 h-4 accent-violet-500 rounded cursor-pointer shrink-0"
               title="Select file"
             />
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <FileAudio className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <FileAudio className="w-3.5 h-3.5 text-violet-400 shrink-0" />
               <h3 className="font-semibold text-neutral-100 text-xs sm:text-sm truncate font-mono" title={item.name}>
                 {item.name}
               </h3>
@@ -104,7 +104,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
               <button
                 onClick={() => onNormalizeSingle(item.id)}
                 disabled={item.isProcessing}
-                className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-semibold transition cursor-pointer inline-flex items-center gap-1 shrink-0"
+                className="px-2 py-1 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/30 text-[11px] font-semibold transition cursor-pointer inline-flex items-center gap-1 shrink-0"
                 title="Level Voice"
               >
                 <Sparkles className="w-3 h-3" />
@@ -146,7 +146,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
               onClick={() => onTogglePlay(item.id, currentSource)}
               className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition cursor-pointer shrink-0 shadow-md ${
                 isCurrentPlaying
-                  ? 'bg-amber-400 text-neutral-950 font-bold shadow-amber-500/30 ring-2 ring-amber-400/50'
+                  ? 'bg-violet-600 text-white font-bold shadow-violet-500/30 ring-2 ring-violet-500/50'
                   : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700'
               }`}
               title={isCurrentPlaying ? 'Pause' : `Play (${currentSource})`}
@@ -170,7 +170,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
             </span>
           ) : (
             <span className="text-[10px] text-neutral-500 font-mono flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500/60 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-500/60 animate-pulse" />
               <span>Pending</span>
             </span>
           )}
@@ -190,7 +190,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
                 }}
                 className={`px-2 py-0.5 rounded-md transition cursor-pointer text-[11px] ${
                   currentSource === 'original'
-                    ? 'bg-neutral-800 text-amber-300 font-bold'
+                    ? 'bg-neutral-800 text-violet-300 font-bold'
                     : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
@@ -203,7 +203,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
                 }}
                 className={`px-2 py-0.5 rounded-md transition cursor-pointer flex items-center gap-1 text-[11px] ${
                   currentSource === 'normalized'
-                    ? 'bg-amber-500 text-neutral-950 font-bold shadow-sm'
+                    ? 'bg-violet-600 text-white font-bold shadow-sm'
                     : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
@@ -213,7 +213,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
             </div>
           ) : (
             <span className="text-[11px] text-neutral-500 font-mono flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500/60 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-violet-500/60 animate-pulse" />
               Pending Normalization
             </span>
           )}
@@ -237,8 +237,8 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
             <>
               <ArrowRight className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
               <div className="text-right">
-                <span className="text-[10px] text-amber-500/80 block uppercase">NORMALIZED</span>
-                <span className="font-bold text-amber-400 text-xs">{item.normalizedAnalytics.integratedLufs} LUFS</span>
+                <span className="text-[10px] text-violet-400/80 block uppercase">NORMALIZED</span>
+                <span className="font-bold text-violet-400 text-xs">{item.normalizedAnalytics.integratedLufs} LUFS</span>
               </div>
             </>
           ) : (
@@ -255,7 +255,7 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
           {/* Per-Item Fine-tune Gain Slider */}
           <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-amber-400 shrink-0" />
+              <Sliders className="w-4 h-4 text-violet-400 shrink-0" />
               <div>
                 <span className="text-xs font-bold text-neutral-200">Individual Voice Trim Offset</span>
                 <p className="text-[11px] text-neutral-400">
@@ -272,9 +272,9 @@ export const AudioBatchItemCard: React.FC<AudioBatchItemCardProps> = ({
                 step="0.5"
                 value={item.customGainDb || 0}
                 onChange={(e) => onUpdateTrim(item.id, parseFloat(e.target.value))}
-                className="w-full accent-amber-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                className="w-full accent-violet-500 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
               />
-              <span className="font-mono text-xs text-amber-400 font-bold w-14 text-right">
+              <span className="font-mono text-xs text-violet-400 font-bold w-14 text-right">
                 {(item.customGainDb || 0) > 0 ? `+${item.customGainDb}` : item.customGainDb || 0} dB
               </span>
             </div>

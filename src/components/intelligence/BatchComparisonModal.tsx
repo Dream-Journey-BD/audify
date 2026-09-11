@@ -27,7 +27,7 @@ export const BatchComparisonModal: React.FC<BatchComparisonModalProps> = ({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between bg-neutral-900/90">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400">
               <Layers className="w-4 h-4" />
             </div>
             <div>
@@ -35,7 +35,7 @@ export const BatchComparisonModal: React.FC<BatchComparisonModalProps> = ({
                 Multi-Voice Loudness Matrix
               </h2>
               <p className="text-xs text-neutral-400">
-                Target: <span className="font-mono text-amber-400 font-bold">{target.targetLufs} LUFS</span> • Ceiling: <span className="font-mono text-neutral-200">{target.targetPeakDb} dBFS</span>
+                Target: <span className="font-mono text-violet-400 font-bold">{target.targetLufs} LUFS</span> • Ceiling: <span className="font-mono text-neutral-200">{target.targetPeakDb} dBFS</span>
               </p>
             </div>
           </div>
@@ -73,13 +73,13 @@ export const BatchComparisonModal: React.FC<BatchComparisonModalProps> = ({
                   return (
                     <tr key={item.id} className="hover:bg-neutral-900/50 transition">
                       <td className="py-3 px-4 font-sans font-medium text-neutral-100 max-w-[200px] truncate">
-                        <span className="text-amber-400 font-mono mr-1.5">#{idx + 1}</span>
+                        <span className="text-violet-400 font-mono mr-1.5">#{idx + 1}</span>
                         {item.name}
                       </td>
                       <td className="py-3 px-3 text-neutral-400 font-bold">
                         {item.analytics.integratedLufs} LUFS
                       </td>
-                      <td className="py-3 px-3 text-amber-400 font-bold">
+                      <td className="py-3 px-3 text-violet-400 font-bold">
                         {newLufs !== 'Pending' ? `${newLufs} LUFS` : <span className="text-neutral-500 font-normal">Pending</span>}
                       </td>
                       <td className="py-3 px-3">

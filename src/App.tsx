@@ -25,6 +25,7 @@ import {
 import { yieldToMain } from './utils/asyncScheduler';
 import { translations } from './utils/translations';
 import { Header } from './components/Header';
+import { NavigationTabs } from './components/NavigationTabs';
 import { AudioUploader } from './components/AudioUploader';
 import { WaveformVisualizer } from './components/WaveformVisualizer';
 import { SilenceDetectionPanel } from './components/SilenceDetectionPanel';
@@ -37,6 +38,7 @@ import { AudioMetadataModal } from './components/AudioMetadataModal';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { TaskProgressModal } from './components/TaskProgressModal';
 import { LoudnessIntelligenceSuite } from './components/intelligence/LoudnessIntelligenceSuite';
+import { TgVoiceSuite } from './components/tgvoice/TgVoiceSuite';
 
 export default function App() {
   // Application Language state (Default to 'en' as requested)
@@ -1105,6 +1107,31 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, currentTime, audioBuffer]);
 
+  // Reset handlers for top shortcuts and bottom bars across all tools
+  const voiceLevelerResetRef = useRef<(() => void) | null>(null);
+  const tgVoiceResetRef = useRef<(() => void) | null>(null);
+
+  const handleResetSlicer = useCallback(() => {
+    stopAudioNode();
+    setAudioBuffer(null);
+    originalAudioBufferRef.current = null;
+    setFileName('');
+    setSegments([]);
+    setHistory([]);
+    setHistoryIndex(-1);
+    setIsCropped(false);
+  }, [stopAudioNode]);
+
+  const handleGlobalReset = useCallback(() => {
+    if (activeTab === 'slicer') {
+      handleResetSlicer();
+    } else if (activeTab === 'intelligence') {
+      voiceLevelerResetRef.current?.();
+    } else if (activeTab === 'tg-voice') {
+      tgVoiceResetRef.current?.();
+    }
+  }, [activeTab, handleResetSlicer]);
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans pb-12">
       {/* Top Navigation & Brand */}
@@ -1112,29 +1139,33 @@ export default function App() {
         lang={lang}
         activeTab={activeTab}
         onChangeTab={setActiveTab}
-        onReset={() => {
-          stopAudioNode();
-          setAudioBuffer(null);
-          originalAudioBufferRef.current = null;
-          setFileName('');
-          setSegments([]);
-          setHistory([]);
-          setHistoryIndex(-1);
-          setIsCropped(false);
-        }}
+        onReset={handleGlobalReset}
         onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
         hasAudio={!!audioBuffer}
         fileName={fileName}
       />
 
+      {/* Main App Tabs Navigation Layout Directly Below Header */}
+      <NavigationTabs
+        activeTab={activeTab}
+        onChangeTab={setActiveTab}
+        lang={lang}
+      />
+
       {/* Main Studio View */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+        {/* Tab 3: TG Voice (Always mounted so uploaded files and processed items are preserved) */}
+        <div className={activeTab === 'tg-voice' ? 'block' : 'hidden'}>
+          <TgVoiceSuite onRegisterReset={(fn) => { tgVoiceResetRef.current = fn; }} />
+        </div>
+
         {/* Tab 2: Voice Leveler (Always mounted so uploaded files and settings are never lost) */}
         <div className={activeTab === 'intelligence' ? 'block' : 'hidden'}>
           <LoudnessIntelligenceSuite
             currentStudioBuffer={audioBuffer}
             currentStudioFileName={fileName}
             lang={lang}
+            onRegisterReset={(fn) => { voiceLevelerResetRef.current = fn; }}
             onImportToStudio={(buf, name) => {
               setAudioBuffer(buf);
               originalAudioBufferRef.current = buf;
@@ -1240,6 +1271,7 @@ export default function App() {
               onChangeVolume={setMasterVolume}
               onOpenExportModal={() => setIsExportModalOpen(true)}
               onOpenAudioMetadata={() => setIsAudioMetadataModalOpen(true)}
+              onReset={handleResetSlicer}
             />
             </div>
           )}

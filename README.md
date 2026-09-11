@@ -1,78 +1,55 @@
-<div align="center">
-  <img src="public/logo.svg" alt="Audify Logo" width="760" />
+<p align="center">
+  <img src="public/logo.svg" alt="Audify Logo" width="600" />
+</p>
 
-  <p align="center">
-    <strong>Studio-Grade Silence Detection, Waveform Slicing &amp; LUFS Normalization Workstation</strong>
-  </p>
+<p align="center">
+  <strong>Studio-Grade, 100% Client-Side Web Audio Workstation</strong><br />
+  Fast silence removal, batch loudness normalization (LUFS / EBU R128), and Telegram voice message conversion.
+</p>
 
-  <p align="center">
-    <a href="#features">Features</a> •
-    <a href="#quick-setup">Quick Setup</a> •
-    <a href="#github-pages-deployment">Deploy</a> •
-    <a href="#usage-guide">Usage Guide</a> •
-    <a href="#keyboard-shortcuts">Shortcuts</a> •
-    <a href="#architecture">Architecture</a> •
-    <a href="#license">License</a>
-  </p>
-
-  <p align="center">
-    <img src="https://img.shields.io/badge/React-19.0-blue?style=flat-square&logo=react" alt="React 19" />
-    <img src="https://img.shields.io/badge/TypeScript-5.8-3178c6?style=flat-square&logo=typescript" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Vite-6.2-646CFF?style=flat-square&logo=vite" alt="Vite" />
-    <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/Web_Audio_API-100%25_Client--Side-10B981?style=flat-square" alt="Web Audio API" />
-    <img src="https://img.shields.io/badge/Vulnerabilities-0-brightgreen?style=flat-square" alt="Vulnerabilities: 0" />
-    <img src="https://img.shields.io/badge/License-MIT-amber?style=flat-square" alt="MIT License" />
-  </p>
-</div>
+<p align="center">
+  <img src="https://img.shields.io/badge/Client--Side-100%25-amber?style=flat-square" alt="100% Client-Side" />
+  <img src="https://img.shields.io/badge/Privacy-Zero%20Uploads-emerald?style=flat-square" alt="Zero Server Uploads" />
+  <img src="https://img.shields.io/badge/LUFS-ITU--R%20BS.1770-blue?style=flat-square" alt="EBU R128 / LUFS" />
+  <img src="https://img.shields.io/badge/Telegram%20Voice-Opus%20OGG-sky?style=flat-square" alt="Telegram Voice" />
+  <img src="https://img.shields.io/badge/License-MIT-neutral?style=flat-square" alt="License MIT" />
+</p>
 
 ---
 
-## Project Overview
+## ⚡ Key Highlights & Modules
 
-**Audify** is a lightweight, ultra-fast web workstation engineered for podcasters, voice actors, audiobook creators, sound editors, and developers. It automates audio editing tasks—detecting silent pauses, trimming dead air, and matching broadcast loudness standards (LUFS/EBU R128)—without requiring heavy desktop software or uploading sensitive audio to cloud servers.
+### 1. ✂️ Silence Slicer
+- **Intelligent Pause & Silence Trimming:** Automatic speech detection with adjustable dB threshold, pre/post padding, and minimum duration filters.
+- **Waveform Canvas Editor:** Interactive visualizer with split, duplicate, delete, nudge, and zoom controls.
+- **Per-Segment Effects:** Custom pitch shifting, tempo stretching, and dynamic volume gain for each slice.
 
-Everything executes **100% client-side** inside the browser using modern Web Audio API DSP pipelines, SIMD-compatible array arithmetic, and Web Workers.
+### 2. 🎚️ Voice Leveler (Loudness Intelligence)
+- **Standardized Loudness Normalization:** Fully compliant with ITU-R BS.1770 & EBU R128 loudness measurement algorithms.
+- **Broadcast & Platform Presets:** Target presets for Podcasts (`-16 LUFS`), YouTube/Streaming (`-14 LUFS`), and Broadcast TV/Radio (`-23 LUFS`).
+- **Brickwall True Peak Limiter:** Automatic limiter guard ensuring no digital distortion or clipping occurs.
+- **Detailed Spectral & Vocal Metrics:** Visual spectrum meter, dynamic range, and integrated LUFS analytics.
 
----
+### 3. 🎙️ Telegram Voice Converter (TG Voice)
+- **Direct Telegram Voice Formatting:** Converts any audio or video recording into native mono Opus `.ogg` voice notes.
+- **High-Throughput Batch Processing:** Non-blocking background worker queue handling 100–300+ files smoothly without UI lockup.
+- **Selective & Batch ZIP Export:** Per-file bitrate options, search/filtering, and instant ZIP archiving.
 
-## Key Features
-
-### 1. Smart Silence Detection & Dynamic Waveform Slicing
-- **Adaptive Energy Thresholds:** Calibrate detection sensitivity from `-60 dB` to `-15 dB` with live threshold overlay.
-- **Natural Boundary Padding:** Configure millisecond pre/post padding to preserve consonant attacks and natural breathing.
-- **Short Transient Filtering:** Set minimum speech duration constraints to reject mouth clicks and background pops.
-- **Dead Air Compaction:** Automatically detect and compress long pauses inside monologue phrases.
-- **Interactive Multi-Zoom Canvas:** Scrub audio with minimap navigation, high-resolution sample zoom, split, duplicate, merge, and drag-boundary nudging.
-
-### 2. Voice Leveler & Loudness Intelligence
-- **ITU-R BS.1770 / EBU R128 Measurement:** Calculate Integrated Loudness (LUFS), Loudness Range (LRA in LU), RMS power, and Crest Factor.
-- **True Peak Oversampling:** Measure inter-sample peaks to protect against digital distortion.
-- **Target Presets:**
-  - **Podcast:** `-16 LUFS`, `-1.0 dBFS` True Peak
-  - **YouTube:** `-14 LUFS`, `-1.0 dBFS` True Peak
-  - **Spotify:** `-14 LUFS`, `-1.0 dBFS` True Peak
-  - **Clean Dialogue:** `-18 LUFS`, `-1.0 dBFS` True Peak
-  - **Broadcast EBU R128:** `-23 LUFS`, `-1.0 dBFS` True Peak
-  - **Peak Normalization:** Peak normalization to `-1.0 dBFS`
-- **Voice Analytics:** Fundamental frequency ($F_0$) pitch detection with musical note mapping, spectral centroid brightness, and 3-band energy distribution.
-- **Master Bus Chain:** High-pass rumble reduction (80 Hz), vocal warmth EQ, soft-knee leveling compressor, and brickwall limiter guard.
-
-### 3. Batch Export
-- **Dual Formats:** Export uncompressed 16-bit PCM WAV or high-efficiency MP3 (128, 192, 256, 320 kbps).
-- **Packaging Modes:**
-  - **ZIP Archive:** Export slices as sequentially numbered files (`voice_01.mp3`, `voice_02.mp3`) with audio metadata.
-  - **Consolidated Track:** Concatenate leveled segments into a single audio file with customizable pauses.
+### 4. 🔒 100% Private & Offline
+- All decoding, manipulation, analysis, and encoding are processed locally in your browser memory via the Web Audio API and WebAssembly.
+- **Zero data or audio ever leaves your computer.**
 
 ---
 
-## Quick Setup
+## 💻 Requirements
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18.0.0 or higher)
-- `npm` or `bun`
+- **Node.js:** `v18.0.0` or higher
+- **Package Manager:** `npm`, `pnpm`, or `bun`
+- **Supported Browsers:** Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge
 
-### Installation & Local Run
+---
+
+## 🚀 Getting Started
 
 ```bash
 # 1. Clone the repository
@@ -82,7 +59,7 @@ cd Audify
 # 2. Install dependencies
 npm install
 
-# 3. Start local development server (runs on port 3000)
+# 3. Start local development server
 npm run dev
 ```
 
@@ -90,85 +67,30 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## GitHub Pages Deployment (Manual 1-Click)
+## 🛠️ Workflows
 
-Audify is fully configured for manual deployment to GitHub Pages using the `gh-pages` branch. No automatic builds on push—deploy strictly when you are ready.
+| Tool | Primary Action | Export Formats |
+| :--- | :--- | :--- |
+| **Silence Slicer** | Remove awkward pauses, breaths, and dead air from podcasts or lectures | MP3 (128–320 kbps), WAV (16/24-bit), ZIP |
+| **Voice Leveler** | Match volume across multiple speakers or microphone tracks | Standardized WAV, High-Bitrate MP3, Batch ZIP |
+| **TG Voice** | Convert voice memos, songs, or video clips to Telegram voice messages | Native Telegram Opus `.ogg`, Consolidated ZIP |
 
-### 1. Configure GitHub Pages (One-Time Setup)
-1. Go to your GitHub repository: `https://github.com/DreamJourneyBD/Audify`
-2. Open **Settings** > **Pages**.
-3. Under **Build and deployment** > **Source**, select **"Deploy from a branch"**.
-4. Set Branch to **`gh-pages`** and folder to **`/(root)`**, then click **Save**.
+---
 
-### 2. Manual Deploy Command
-Whenever you want to publish your latest changes to live:
+## 📦 Build & Deployment
+
+To build the static distribution:
+```bash
+npm run build
+```
+
+To deploy to GitHub Pages:
 ```bash
 npm run deploy
 ```
-This builds the production bundle and pushes it to the `gh-pages` branch. Your app will be live at:
-**`https://dreamjourneybd.github.io/Audify/`**
 
 ---
 
-## Keyboard Shortcuts
+## 📄 License
 
-| Shortcut | Action |
-| :--- | :--- |
-| `Space` | Play / Pause active playback |
-| `J` / `←` | Jump backward 1.0 second |
-| `L` / `→` | Jump forward 1.0 second |
-| `K` | Stop playback and return playhead to start |
-| `+` / `=` | Zoom in on waveform |
-| `-` / `_` | Zoom out on waveform |
-| `0` | Reset zoom to fit full duration |
-| `S` | Split active segment at playhead |
-| `D` | Duplicate currently selected segment |
-| `Delete` / `Backspace` | Remove selected segment |
-| `Ctrl + Z` / `Cmd + Z` | Undo last edit action |
-| `Ctrl + Shift + Z` | Redo last edit action |
-| `?` | Open keyboard shortcuts modal |
-
----
-
-## Architecture
-
-```
-Audify/
-├── public/
-│   ├── favicon.svg          # Vector brand favicon
-│   ├── logo.svg             # Project banner logo
-│   ├── icon-192.svg         # Square app icon (192px)
-│   └── icon-512.svg         # Square app icon (512px)
-├── src/
-│   ├── components/
-│   │   ├── intelligence/    # Voice Leveler & LUFS analysis components
-│   │   ├── segments/        # Segment cards and actions
-│   │   ├── silence/         # Silence detection parameters & metrics
-│   │   ├── waveform/        # High-resolution waveform canvas
-│   │   ├── export/          # Export dialogs and format options
-│   │   └── Header.tsx       # Top navigation bar
-│   ├── utils/
-│   │   ├── analytics/       # ITU-R BS.1770 K-weighting, True Peak & F0 pitch
-│   │   ├── audio/           # Web Audio context, MP3/WAV encoders, segment slicing
-│   │   ├── normalization/   # Dynamic LUFS gain matching & batch audio processors
-│   │   └── asyncScheduler.ts# UI non-blocking event-loop yielding helpers
-│   ├── types.ts             # TypeScript domain interfaces
-│   ├── App.tsx              # Main workstation coordinator
-│   └── main.tsx             # React entry point
-├── package.json             # Dependencies and build/deploy scripts
-└── vite.config.ts           # Vite + Tailwind configuration with base path
-```
-
----
-
-## Privacy
-
-- **Zero Server Uploads:** Audio never leaves your device.
-- **Zero Telemetry Tracking:** No third-party tracking scripts or remote analytics.
-- **Zero Network Ingress:** All processing occurs in local sandbox memory.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+This project is open source and available under the [MIT License](LICENSE).

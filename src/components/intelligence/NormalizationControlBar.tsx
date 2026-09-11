@@ -130,7 +130,7 @@ export const NormalizationControlBar: React.FC<NormalizationControlBarProps> = (
         <div className="flex items-center gap-2.5 shrink-0">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-neutral-100 flex items-center gap-2">
-              <Sliders className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-amber-400" />
+              <Sliders className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-violet-400" />
               {t.tabIntelligence || 'Voice Leveler'}
             </h2>
             <p className="text-[11px] sm:text-xs text-neutral-400 mt-0.5">
@@ -149,7 +149,7 @@ export const NormalizationControlBar: React.FC<NormalizationControlBarProps> = (
               className="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] sm:text-xs font-semibold border border-neutral-700 transition cursor-pointer shadow-sm disabled:opacity-50"
               title="Compare all voices in a matrix table"
             >
-              <Layers className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <Layers className="w-3.5 h-3.5 text-violet-400 shrink-0" />
               <span>Compare</span>
             </button>
           )}
@@ -163,7 +163,7 @@ export const NormalizationControlBar: React.FC<NormalizationControlBarProps> = (
               className="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] sm:text-xs font-bold border border-neutral-700 hover:border-neutral-600 transition shadow-sm cursor-pointer disabled:opacity-50"
               title="Add more voice tracks"
             >
-              <Plus className="w-3.5 h-3.5 text-amber-400 stroke-[2.5] shrink-0" />
+              <Plus className="w-3.5 h-3.5 text-violet-400 stroke-[2.5] shrink-0" />
               <span>{t.addFilesBtn || 'Add Files'}</span>
             </button>
           )}
@@ -172,7 +172,7 @@ export const NormalizationControlBar: React.FC<NormalizationControlBarProps> = (
             id="normalize-all-voices-btn"
             onClick={onNormalizeAll}
             disabled={isProcessing || totalCount === 0}
-            className="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-950 text-[11px] sm:text-xs font-bold shadow-md shadow-amber-500/20 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-[11px] sm:text-xs font-bold shadow-md shadow-violet-500/20 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Sparkles className={`w-3.5 h-3.5 shrink-0 ${isProcessing ? 'animate-spin' : ''}`} />
             <span>
@@ -215,7 +215,7 @@ export const NormalizationControlBar: React.FC<NormalizationControlBarProps> = (
                 disabled={isProcessing}
                 className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition cursor-pointer border ${
                   isSelected
-                    ? 'bg-amber-500 text-neutral-950 font-bold border-amber-400 shadow-md shadow-amber-500/10'
+                    ? 'bg-violet-600 text-white font-bold border-violet-500 shadow-md shadow-violet-500/20'
                     : 'bg-neutral-950/80 hover:bg-neutral-800 text-neutral-300 border-neutral-800'
                 }`}
                 title={p.desc}

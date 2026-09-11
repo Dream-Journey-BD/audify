@@ -50,7 +50,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-neutral-800 flex items-center justify-between bg-neutral-950/60 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
               <Download className="w-5 h-5" />
             </div>
             <div>
@@ -80,7 +80,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
               <label className="text-xs font-semibold text-neutral-200 flex items-center gap-1.5">
                 <span>Audio Format</span>
               </label>
-              <span className="text-[11px] text-amber-400 font-mono font-bold">
+              <span className="text-[11px] text-violet-400 font-mono font-bold">
                 {config.format.toUpperCase()} (
                 {config.format === 'mp3' ? `${config.mp3Bitrate} kbps` : '16-bit PCM Lossless'})
               </span>
@@ -93,7 +93,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
                 onClick={() => onUpdateConfig({ ...config, format: 'wav' })}
                 className={`p-3 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
                   config.format === 'wav'
-                    ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/50'
+                    ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/50'
                     : 'border-neutral-800 bg-neutral-900/60 hover:bg-neutral-900'
                 }`}
               >
@@ -119,17 +119,17 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
                 onClick={() => onUpdateConfig({ ...config, format: 'mp3' })}
                 className={`p-3 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
                   config.format === 'mp3'
-                    ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/50'
+                    ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/50'
                     : 'border-neutral-800 bg-neutral-900/60 hover:bg-neutral-900'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0 mt-0.5">
                   <Music className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-bold text-neutral-100">MP3 (.mp3)</span>
-                    <span className="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-300 font-mono">
+                    <span className="px-1.5 py-0.5 text-[9px] rounded bg-violet-500/20 text-violet-300 font-mono">
                       LAME
                     </span>
                   </div>
@@ -152,7 +152,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
                       onClick={() => onUpdateConfig({ ...config, mp3Bitrate: br })}
                       className={`px-2.5 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer ${
                         config.mp3Bitrate === br
-                          ? 'bg-amber-500 text-neutral-950 font-bold'
+                          ? 'bg-violet-600 text-white font-bold'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
@@ -166,13 +166,13 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
 
           {/* Clean Ready Status Box with Original File Names Note */}
           <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-950/60 border border-neutral-800 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
-              <FileCheck className="w-4 h-4 text-amber-400" />
+            <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0 mt-0.5">
+              <FileCheck className="w-4 h-4 text-violet-400" />
             </div>
             <div className="min-w-0">
               <h4 className="text-xs font-bold text-neutral-200 flex items-center gap-1.5">
                 <span>Original File Names Preserved</span>
-                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px]">
+                <span className="px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 font-mono text-[10px]">
                   {items.length} {items.length === 1 ? 'file' : 'files'}
                 </span>
               </h4>
@@ -186,7 +186,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
           <div className="p-3.5 rounded-xl bg-neutral-950/40 border border-neutral-800/80 flex items-center justify-between gap-3">
             <div>
               <div className="text-xs font-semibold text-neutral-200 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <Layers className="w-3.5 h-3.5 text-violet-400 shrink-0" />
                 <span>Pause Between Joined Clips</span>
               </div>
               <p className="text-[11px] text-neutral-400 mt-0.5">
@@ -206,7 +206,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
                     joinedPauseDuration: Math.max(0, parseFloat(e.target.value) || 0),
                   })
                 }
-                className="w-16 px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-100 text-xs font-mono text-center focus:outline-none focus:border-amber-500"
+                className="w-16 px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-100 text-xs font-mono text-center focus:outline-none focus:border-violet-500"
               />
               <span className="text-xs text-neutral-400 font-mono">s</span>
             </div>
@@ -214,8 +214,8 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
 
           {/* Export Progress Bar */}
           {isExporting && (
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-              <div className="flex items-center justify-between text-xs text-amber-300 font-medium">
+            <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/30 space-y-2">
+              <div className="flex items-center justify-between text-xs text-violet-300 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 animate-spin" />
                   <span>Exporting & Encoding Files...</span>
@@ -235,7 +235,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
               </div>
               <div className="w-full h-2 rounded-full bg-neutral-800 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-200"
+                  className="h-full bg-gradient-to-r from-violet-600 to-purple-600 transition-all duration-200"
                   style={{ width: `${exportProgress.percent}%` }}
                 />
               </div>
@@ -265,7 +265,7 @@ export const IntelligenceExportModal: React.FC<IntelligenceExportModalProps> = (
             type="button"
             onClick={onExportZip}
             disabled={isExporting || items.length === 0}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-neutral-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-violet-500/20 transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
             title="Download all leveled voices packaged in a ZIP"
           >
             <FileArchive className="w-4 h-4 fill-current" />

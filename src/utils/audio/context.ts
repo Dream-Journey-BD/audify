@@ -1,4 +1,5 @@
 import { AppLanguage } from '../../types';
+import { demuxMp4Audio } from '../mediaDemuxer';
 
 let audioCtx: AudioContext | null = null;
 
@@ -58,13 +59,21 @@ export function formatDurationFriendly(seconds: number, _lang?: AppLanguage): st
 }
 
 /**
- * Decodes any audio file (MP3, WAV, M4A, OGG, WebM, etc.) into an AudioBuffer
+ * Decodes any audio file (MP3, WAV, M4A, OGG, WebM, MP4, etc.) into an AudioBuffer
  */
 export async function decodeAudioFile(file: File | Blob): Promise<AudioBuffer> {
   const ctx = getAudioContext();
   const arrayBuffer = await file.arrayBuffer();
-  const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-  return audioBuffer;
+  try {
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+    return audioBuffer;
+  } catch (err) {
+    const demuxed = demuxMp4Audio(arrayBuffer);
+    if (demuxed.isMp4 && demuxed.hasAudio && demuxed.buffer) {
+      return await ctx.decodeAudioData(demuxed.buffer.slice(0));
+    }
+    throw err;
+  }
 }
 
 /**
