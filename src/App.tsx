@@ -684,9 +684,21 @@ export default function App() {
 
       // Re-run silence detection on cropped buffer
       const newSegs = detectSilenceSegments(cropped, silenceSettings);
-      applyNewSegments(newSegs, true);
-      if (newSegs.length > 0) {
-        setActiveSegmentId(newSegs[0].id);
+      const mergedSegs = newSegs.map((newSeg, i) => {
+        const matching = segments.find(
+          (old) => old.customName && Math.max(old.start, newSeg.start) < Math.min(old.end, newSeg.end)
+        );
+        if (matching?.customName) {
+          return { ...newSeg, customName: matching.customName };
+        }
+        if (segments[i]?.customName) {
+          return { ...newSeg, customName: segments[i].customName };
+        }
+        return newSeg;
+      });
+      applyNewSegments(mergedSegs, true);
+      if (mergedSegs.length > 0) {
+        setActiveSegmentId(mergedSegs[0].id);
       }
     } catch (err) {
       console.error('Failed to crop audio:', err);
@@ -703,9 +715,21 @@ export default function App() {
     setCurrentTime(0);
 
     const newSegs = detectSilenceSegments(original, silenceSettings);
-    applyNewSegments(newSegs, true);
-    if (newSegs.length > 0) {
-      setActiveSegmentId(newSegs[0].id);
+    const mergedSegs = newSegs.map((newSeg, i) => {
+      const matching = segments.find(
+        (old) => old.customName && Math.max(old.start, newSeg.start) < Math.min(old.end, newSeg.end)
+      );
+      if (matching?.customName) {
+        return { ...newSeg, customName: matching.customName };
+      }
+      if (segments[i]?.customName) {
+        return { ...newSeg, customName: segments[i].customName };
+      }
+      return newSeg;
+    });
+    applyNewSegments(mergedSegs, true);
+    if (mergedSegs.length > 0) {
+      setActiveSegmentId(mergedSegs[0].id);
     }
   };
 
@@ -728,6 +752,10 @@ export default function App() {
     });
 
     try {
+      const existingNames = segments.map((s) => s.customName).filter((name): name is string => !!name && name.trim().length > 0);
+      const existingMapByIndex = new Map<number, AudioSegment>();
+      segments.forEach((s) => existingMapByIndex.set(s.index, s));
+
       const segs = await detectSilenceSegmentsAsync(
         audioBuffer,
         silenceSettings,
@@ -741,9 +769,51 @@ export default function App() {
       );
 
       if (!cancelTaskRef.current) {
-        applyNewSegments(segs, true);
-        if (segs.length > 0) {
-          setActiveSegmentId(segs[0].id);
+        // Intelligently preserve custom clip names and user properties across re-detection
+        const mergedSegs = segs.map((newSeg, i) => {
+          // 1. Try finding an existing segment whose time window overlaps significantly
+          const overlappingSeg = segments.find(
+            (old) =>
+              old.customName &&
+              Math.max(old.start, newSeg.start) < Math.min(old.end, newSeg.end)
+          );
+
+          if (overlappingSeg && overlappingSeg.customName) {
+            return {
+              ...newSeg,
+              customName: overlappingSeg.customName,
+              speed: overlappingSeg.speed ?? newSeg.speed,
+              pitch: overlappingSeg.pitch ?? newSeg.pitch,
+              volume: overlappingSeg.volume ?? newSeg.volume,
+            };
+          }
+
+          // 2. Otherwise if same ordinal position had a custom name, preserve it
+          const oldSameIndex = existingMapByIndex.get(newSeg.index);
+          if (oldSameIndex && oldSameIndex.customName) {
+            return {
+              ...newSeg,
+              customName: oldSameIndex.customName,
+              speed: oldSameIndex.speed ?? newSeg.speed,
+              pitch: oldSameIndex.pitch ?? newSeg.pitch,
+              volume: oldSameIndex.volume ?? newSeg.volume,
+            };
+          }
+
+          // 3. Fallback: preserve sequential custom name if within original bounds
+          if (i < existingNames.length && existingNames[i]) {
+            return {
+              ...newSeg,
+              customName: existingNames[i],
+            };
+          }
+
+          return newSeg;
+        });
+
+        applyNewSegments(mergedSegs, true);
+        if (mergedSegs.length > 0) {
+          setActiveSegmentId(mergedSegs[0].id);
         }
       }
     } finally {
@@ -783,6 +853,22 @@ export default function App() {
   const handleUpdateSegment = (updated: AudioSegment) => {
     const synchronized = syncSegmentBoundaries(updated, updated.start, updated.end);
     const updatedSegs = segments.map((s) => (s.id === updated.id ? synchronized : s));
+    applyNewSegments(updatedSegs, true);
+  };
+
+  // Batch rename consecutive segments starting from a given index (e.g. from multi-line newline paste)
+  const handleBatchRenameSegments = (startIndex: number, names: string[]) => {
+    if (names.length === 0 || segments.length === 0) return;
+    const updatedSegs = segments.map((seg, idx) => {
+      if (idx >= startIndex && idx < startIndex + names.length) {
+        const newName = names[idx - startIndex];
+        return {
+          ...seg,
+          customName: newName,
+        };
+      }
+      return seg;
+    });
     applyNewSegments(updatedSegs, true);
   };
 
@@ -1253,6 +1339,7 @@ export default function App() {
               onRemovePartFromMerge={handleRemovePartFromMerge}
               onDownloadSingle={handleDownloadSingleSegment}
               onCompressSegmentPauses={handleCompressSegmentPauses}
+              onBatchRenameSegments={handleBatchRenameSegments}
             />
 
             {/* 5. Bottom Audio Transport, Metadata & Quick Export Bar */}

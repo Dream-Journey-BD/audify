@@ -42,6 +42,7 @@ interface SegmentItemCardProps {
   onPlaySubRange?: (segmentId: string, partIndex: number, start: number, end: number) => void;
   onRemovePartFromMerge?: (segmentId: string, partIndex: number) => void;
   onUnmergeSegment?: (id: string) => void;
+  onBatchRenameSegments?: (startIndex: number, names: string[]) => void;
   t: any;
 }
 
@@ -76,6 +77,7 @@ export const SegmentItemCard: React.FC<SegmentItemCardProps> = ({
   onPlaySubRange,
   onRemovePartFromMerge,
   onUnmergeSegment,
+  onBatchRenameSegments,
   t,
 }) => {
   const rawDuration = segment.end - segment.start;
@@ -256,6 +258,42 @@ export const SegmentItemCard: React.FC<SegmentItemCardProps> = ({
             placeholder={`${t.customNamePlaceholder} (↵ Enter)`}
             value={segment.customName || ''}
             onChange={(e) => onUpdateSegment({ ...segment, customName: e.target.value })}
+            onPaste={(e) => {
+              const clipboardText = e.clipboardData?.getData('text') ?? '';
+              if (!clipboardText) return;
+
+              // Check if clipboard text contains actual line breaks (line-by-line copied text)
+              const hasLineBreak = /[\r\n\u2028\u2029]/.test(clipboardText);
+
+              if (hasLineBreak) {
+                e.preventDefault();
+                // Split by any standard newline, carriage return or unicode line separators
+                const lines = clipboardText
+                  .split(/\r\n|\r|\n|\u2028|\u2029/)
+                  .map((line) => line.trim())
+                  .filter((line) => line.length > 0);
+
+                if (lines.length > 1) {
+                  if (onBatchRenameSegments) {
+                    onBatchRenameSegments(index, lines);
+                  } else {
+                    onUpdateSegment({ ...segment, customName: lines[0] });
+                  }
+
+                  // Auto-focus the next input after the pasted range if available
+                  const nextTargetIndex = index + lines.length;
+                  setTimeout(() => {
+                    const targetInput = document.getElementById(`clip-name-input-${nextTargetIndex}`);
+                    if (targetInput) {
+                      (targetInput as HTMLInputElement).focus();
+                      (targetInput as HTMLInputElement).select();
+                    }
+                  }, 50);
+                } else if (lines.length === 1) {
+                  onUpdateSegment({ ...segment, customName: lines[0] });
+                }
+              }
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -268,8 +306,8 @@ export const SegmentItemCard: React.FC<SegmentItemCardProps> = ({
                 }
               }
             }}
-            className="w-full px-2.5 py-1 text-xs rounded bg-neutral-900 border border-neutral-700/80 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-amber-500 font-sans"
-            title={t.pressEnterForNext || 'Press Enter for next clip name'}
+            className="w-full px-2.5 py-1 text-xs rounded bg-neutral-900 border border-neutral-700/80 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-amber-500 font-sans transition-colors"
+            title={t.pasteMultiLineTip || t.pressEnterForNext || 'Press Enter for next clip name'}
           />
         </div>
       </div>

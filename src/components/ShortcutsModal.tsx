@@ -12,6 +12,7 @@ import {
   Trash2,
   ArrowLeftRight,
   Layers,
+  ClipboardList,
 } from 'lucide-react';
 import { AppLanguage } from '../types';
 import { translations } from '../utils/translations';
@@ -84,6 +85,12 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       icon: CornerDownLeft,
       keys: ['Enter ↵'],
       desc: t.shortcutsEnterNext,
+      tag: 'Naming',
+    },
+    {
+      icon: ClipboardList,
+      keys: ['Ctrl / ⌘', 'V'],
+      desc: t.shortcutsPasteMultiLine || 'Paste multi-line list to auto-assign clip names across all slots',
       tag: 'Naming',
     },
     {

@@ -30,6 +30,7 @@ interface SegmentListProps {
   onRemovePartFromMerge?: (segmentId: string, partIndex: number) => void;
   onDownloadSingle: (segment: AudioSegment) => void;
   onCompressSegmentPauses?: (segment: AudioSegment) => void;
+  onBatchRenameSegments?: (startIndex: number, names: string[]) => void;
 }
 
 export const SegmentList: React.FC<SegmentListProps> = ({
@@ -57,6 +58,7 @@ export const SegmentList: React.FC<SegmentListProps> = ({
   onRemovePartFromMerge,
   onDownloadSingle,
   onCompressSegmentPauses,
+  onBatchRenameSegments,
 }) => {
   const t = translations[lang || 'en'] || translations.en;
   const [openEffectsIds, setOpenEffectsIds] = useState<Record<string, boolean>>({});
@@ -169,6 +171,7 @@ export const SegmentList: React.FC<SegmentListProps> = ({
             onPlaySubRange={onPlaySubRange}
             onRemovePartFromMerge={onRemovePartFromMerge}
             onUnmergeSegment={onUnmergeSegment}
+            onBatchRenameSegments={onBatchRenameSegments}
             t={t}
           />
         ))}
