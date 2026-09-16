@@ -13,9 +13,10 @@ import {
   audioBufferToMp3Blob,
   audioBufferToWavBlobAsync,
   audioBufferToMp3BlobAsync,
+  mediaSessionManager,
 } from '../../utils/audioEngine';
 import { yieldToMain } from '../../utils/asyncScheduler';
-import { decodeAudioFile } from '../../utils/audio/context';
+import { decodeAudioFileWithProgress } from '../../utils/audio/context';
 import { IntelligencePlayerBar } from './IntelligencePlayerBar';
 import { NormalizationControlBar } from './NormalizationControlBar';
 import { AudioBatchItemCard } from './AudioBatchItemCard';
@@ -229,6 +230,11 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
       activeSourceNodeRef.current = null;
     }
     setPlayingId(null);
+    mediaSessionManager.update({
+      title: 'Voice Leveler',
+      artist: 'Audify Batch Normalizer',
+      isPlaying: false,
+    });
   }, []);
 
   // Reset all Voice Leveler state
@@ -292,6 +298,19 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
       activeSourceNodeRef.current = sourceNode;
       setPlayingId(id);
       setPlaybackSource(source);
+
+      // Register Chrome / OS media notification
+      mediaSessionManager.update({
+        title: `${item.name} (${source === 'normalized' ? 'Levelled' : 'Original'})`,
+        artist: 'Voice Leveler Studio',
+        album: 'Audify Batch Audio',
+        duration: bufferToPlay.duration,
+        currentTime: 0,
+        isPlaying: true,
+        onPlay: () => playItemBuffer(id, source),
+        onPause: () => stopPlayback(),
+        onStop: () => stopPlayback(),
+      });
     },
     []
   );
@@ -357,7 +376,7 @@ export const LoudnessIntelligenceSuite: React.FC<LoudnessIntelligenceSuiteProps>
       setImportProgress({ current: i + 1, total, name: file.name });
 
       try {
-        const decoded = await decodeAudioFile(file);
+        const decoded = await decodeAudioFileWithProgress(file);
         const analytics = await analyzeAudioBuffer(decoded);
 
         accumulated.push({

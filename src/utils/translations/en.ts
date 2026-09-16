@@ -3,6 +3,7 @@ export const en = {
   appSubtitle: 'Web Audio Silence Slicer, LUFS Normalizer & Acoustic Intelligence',
   tabSlicer: 'Silence Slicer',
   tabIntelligence: 'Voice Leveler',
+  tabSplitter: 'Audio Splitter',
   tabTgVoice: 'TG Voice',
   uploadTitle: 'Upload Audio File',
   uploadSubtitle: 'Drop MP3, WAV, M4A, OGG, FLAC, or WebM here or browse to select',

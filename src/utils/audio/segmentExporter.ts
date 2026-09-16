@@ -45,9 +45,9 @@ export async function exportSegmentSingle(
 
   let blob: Blob;
   if (settings.exportAudioFormat === 'mp3') {
-    blob = audioBufferToMp3Blob(renderedBuffer, settings.mp3Bitrate || 192);
+    blob = await audioBufferToMp3BlobAsync(renderedBuffer, settings.mp3Bitrate || 192);
   } else {
-    blob = audioBufferToWavBlob(renderedBuffer);
+    blob = await audioBufferToWavBlobAsync(renderedBuffer);
   }
 
   return { blob, fileName };
@@ -79,9 +79,11 @@ export async function exportSegmentsZip(
     const seg = activeSegments[i];
     const fileName = formatSegmentFileName(seg, settings);
 
+    const renderBasePct = Math.round((i / total) * 80);
+    const itemRange = (1 / total) * 80;
+
     if (onProgress) {
-      const renderBasePct = Math.round((i / total) * 80);
-      onProgress(renderBasePct, fileName);
+      onProgress(renderBasePct, `Rendering ${i + 1}/${total}: ${fileName}`);
     }
 
     const renderedBuffer = await renderSegmentToAudioBuffer(
@@ -96,25 +98,46 @@ export async function exportSegmentsZip(
         ? await audioBufferToMp3BlobAsync(
             renderedBuffer,
             settings.mp3Bitrate || 192,
-            undefined,
+            (subPct) => {
+              if (onProgress) {
+                const currentPct = Math.min(84, Math.round(renderBasePct + (subPct / 100) * itemRange));
+                onProgress(currentPct, `Encoding ${i + 1}/${total}: ${fileName} (${subPct}%)`);
+              }
+            },
             shouldCancel
           )
-        : await audioBufferToWavBlobAsync(renderedBuffer, undefined, shouldCancel);
+        : await audioBufferToWavBlobAsync(
+            renderedBuffer,
+            (subPct) => {
+              if (onProgress) {
+                const currentPct = Math.min(84, Math.round(renderBasePct + (subPct / 100) * itemRange));
+                onProgress(currentPct, `Encoding ${i + 1}/${total}: ${fileName} (${subPct}%)`);
+              }
+            },
+            shouldCancel
+          );
 
     folder.file(fileName, blob);
-    await yieldToMain();
+    await yieldToMain(true);
   }
 
   if (onProgress) {
     onProgress(85, 'Creating ZIP archive...');
   }
 
-  const zipBlob = await zip.generateAsync({ type: 'blob' }, (metadata) => {
-    if (onProgress) {
-      const currentPct = 85 + Math.round(metadata.percent * 0.15);
-      onProgress(Math.min(99, currentPct), 'Compressing ZIP archive...');
+  const zipBlob = await zip.generateAsync(
+    {
+      type: 'blob',
+      compression: settings.exportAudioFormat === 'mp3' ? 'STORE' : 'DEFLATE',
+      compressionOptions: { level: 1 },
+    },
+    (metadata) => {
+      if (onProgress) {
+        const currentPct = 85 + Math.round(metadata.percent * 0.15);
+        onProgress(Math.min(99, currentPct), 'Compressing ZIP archive...');
+      }
     }
-  });
+  );
 
   if (onProgress) {
     onProgress(100, 'Done');

@@ -39,6 +39,13 @@ export const TgVoiceExportModal: React.FC<TgVoiceExportModalProps> = ({
   const [bitrate, setBitrate] = useState<number | 'original'>('original');
   const [compression, setCompression] = useState<boolean>(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isExporting) {
+      setIsCancelling(false);
+    }
+  }, [isExporting]);
 
   // Ready items that can be exported
   const readyItems = items.filter((it) => it.status === 'ready');
@@ -124,39 +131,103 @@ export const TgVoiceExportModal: React.FC<TgVoiceExportModalProps> = ({
         </div>
 
         {/* Modal Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {/* File Selection Section */}
-          <div className="space-y-2">
-            {/* Header: Title on Left, Select All & Deselect All on Right */}
-            <div className="flex items-center justify-between gap-2 pb-1">
-              <span className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
-                <span>Select Files to Export</span>
-                <span className="px-2 py-0.5 rounded bg-sky-500/15 border border-sky-500/30 text-sky-300 font-mono text-[11px] font-bold">
-                  {selectedCount}/{readyItems.length}
-                </span>
-              </span>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={selectAll}
-                  disabled={isExporting || isAllSelected}
-                  className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-300 hover:text-neutral-100 text-[11px] font-medium border border-neutral-700 transition cursor-pointer disabled:opacity-40"
-                  title="Select all files"
-                >
-                  Select All
-                </button>
-                <button
-                  type="button"
-                  onClick={deselectAll}
-                  disabled={isExporting || selectedCount === 0}
-                  className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-300 hover:text-neutral-100 text-[11px] font-medium border border-neutral-700 transition cursor-pointer disabled:opacity-40"
-                  title="Deselect all files"
-                >
-                  Deselect All
-                </button>
+        {isExporting ? (
+          <div className="p-6 sm:p-8 flex flex-col items-center justify-center space-y-6 flex-1 text-center">
+            {/* Spinning Visual Badge */}
+            <div className="relative flex items-center justify-center">
+              <div className="w-20 h-20 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                <Loader2 className="w-10 h-10 animate-spin text-sky-400" />
+              </div>
+              <div className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-sky-600 text-white text-[10px] font-bold tracking-wider uppercase font-mono shadow-md">
+                {exportProgress}%
               </div>
             </div>
+
+            <div className="space-y-1.5 max-w-sm">
+              <h4 className="text-base font-bold text-neutral-100">
+                Exporting Telegram Voice Messages...
+              </h4>
+              <p className="text-xs text-neutral-400">
+                {exportStatusText || 'Encoding audio to Opus OGG and packaging files. Please wait...'}
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full max-w-md space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-neutral-400 truncate max-w-[70%] font-mono text-[11px]">
+                  {selectedCount} voice {selectedCount === 1 ? 'message' : 'messages'}
+                </span>
+                <span className="font-mono text-sky-400 font-bold">
+                  {exportProgress}%
+                </span>
+              </div>
+              <div className="w-full h-3 rounded-full bg-neutral-800 overflow-hidden border border-neutral-700/80 p-0.5">
+                <div
+                  className="h-full bg-gradient-to-r from-sky-500 to-blue-500 transition-all duration-300 rounded-full"
+                  style={{ width: `${Math.max(4, exportProgress)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Cancel Button */}
+            {onCancelExport && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCancelling(true);
+                    onCancelExport();
+                  }}
+                  disabled={isCancelling}
+                  className="px-5 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-750 text-red-400 hover:text-red-300 text-xs font-semibold border border-red-500/30 transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-60"
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Cancelling...</span>
+                    </>
+                  ) : (
+                    <span>Cancel Export</span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            {/* File Selection Section */}
+            <div className="space-y-2">
+              {/* Header: Title on Left, Select All & Deselect All on Right */}
+              <div className="flex items-center justify-between gap-2 pb-1">
+                <span className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
+                  <span>Select Files to Export</span>
+                  <span className="px-2 py-0.5 rounded bg-sky-500/15 border border-sky-500/30 text-sky-300 font-mono text-[11px] font-bold">
+                    {selectedCount}/{readyItems.length}
+                  </span>
+                </span>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    disabled={isExporting || isAllSelected}
+                    className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-300 hover:text-neutral-100 text-[11px] font-medium border border-neutral-700 transition cursor-pointer disabled:opacity-40"
+                    title="Select all files"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deselectAll}
+                    disabled={isExporting || selectedCount === 0}
+                    className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-300 hover:text-neutral-100 text-[11px] font-medium border border-neutral-700 transition cursor-pointer disabled:opacity-40"
+                    title="Deselect all files"
+                  >
+                    Deselect All
+                  </button>
+                </div>
+              </div>
 
             {/* Scrollable File List */}
             <div className="border border-neutral-800 rounded-xl bg-neutral-950/60 divide-y divide-neutral-850 max-h-48 sm:max-h-56 overflow-y-auto">
@@ -299,36 +370,23 @@ export const TgVoiceExportModal: React.FC<TgVoiceExportModalProps> = ({
             </button>
           </div>
 
-          {/* Progress Bar when Exporting */}
-          {isExporting && (
-            <div className="space-y-2 pt-2 border-t border-neutral-800">
-              <div className="flex items-center justify-between text-xs text-sky-400 font-medium">
-                <span className="flex items-center gap-2 truncate max-w-[80%]">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
-                  <span className="truncate">{exportStatusText || 'Processing & Encoding...'}</span>
-                </span>
-                <span className="font-mono">{exportProgress}%</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-neutral-800 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-sky-500 to-blue-500 transition-all duration-200 rounded-full"
-                  style={{ width: `${Math.max(5, exportProgress)}%` }}
-                />
-              </div>
+          {/* 3. Echo Processing Notice */}
+          <div className="py-2.5 border-t border-neutral-800/80 flex items-center justify-between">
+            <div>
+              <span className="text-xs sm:text-sm font-semibold text-neutral-200 block">
+                Item Echo Settings
+              </span>
+              <span className="text-[11px] text-neutral-400 block">
+                Export preserves the real-time echo levels configured for each item
+              </span>
             </div>
-          )}
+            <span className="text-xs font-mono font-medium text-sky-400 px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/20">
+              Active per item
+            </span>
+          </div>
 
-          {/* Footer Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
-            {isExporting ? (
-              <button
-                type="button"
-                onClick={onCancelExport}
-                className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-750 text-red-400 text-xs sm:text-sm font-medium transition-colors cursor-pointer border border-red-500/30"
-              >
-                Cancel Export
-              </button>
-            ) : (
+            {/* Footer Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
               <button
                 type="button"
                 onClick={onClose}
@@ -336,35 +394,30 @@ export const TgVoiceExportModal: React.FC<TgVoiceExportModalProps> = ({
               >
                 Cancel
               </button>
-            )}
 
-            <button
-              id="confirm-tg-export-btn"
-              type="submit"
-              disabled={isExporting || selectedCount === 0}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-sky-500/20 active:scale-98 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Exporting...</span>
-                </>
-              ) : selectedCount === 0 ? (
-                <span>Select Files to Export</span>
-              ) : selectedCount === 1 ? (
-                <>
-                  <Download className="w-4 h-4" />
-                  <span>Export .ogg</span>
-                </>
-              ) : (
-                <>
-                  <FileArchive className="w-4 h-4" />
-                  <span>Export ZIP ({selectedCount})</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+              <button
+                id="confirm-tg-export-btn"
+                type="submit"
+                disabled={selectedCount === 0}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-sky-500/20 active:scale-98 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {selectedCount === 0 ? (
+                  <span>Select Files to Export</span>
+                ) : selectedCount === 1 ? (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>Export .ogg</span>
+                  </>
+                ) : (
+                  <>
+                    <FileArchive className="w-4 h-4" />
+                    <span>Export ZIP ({selectedCount})</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

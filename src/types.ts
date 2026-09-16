@@ -50,7 +50,7 @@ export interface ExportSettings {
 
 export type AppLanguage = 'bn' | 'en';
 
-export type AppActiveTab = 'slicer' | 'intelligence' | 'tg-voice';
+export type AppActiveTab = 'slicer' | 'intelligence' | 'splitter' | 'tg-voice';
 
 export interface TgVoiceItem {
   id: string;
@@ -63,6 +63,7 @@ export interface TgVoiceItem {
   originalSampleRate: number;
   originalBitrate?: number;
   selectedBitrate?: number | 'original';
+  echoLevel?: number;
   status: 'pending' | 'processing' | 'ready' | 'error';
   progress: number;
   error?: string;

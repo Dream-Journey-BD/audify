@@ -9,7 +9,7 @@ import {
 } from '../../utils/tgVoiceConverter';
 import { yieldToMain } from '../../utils/asyncScheduler';
 
-const MAX_CONCURRENT = 2;
+const MAX_CONCURRENT = 1;
 const MAX_IN_MEMORY_BUFFERS = 15;
 
 export function useTgVoiceQueue() {
@@ -67,23 +67,27 @@ export function useTgVoiceQueue() {
         )
       );
 
-      await yieldToMain();
+      await yieldToMain(true);
       const monoBuffer = convertToMonoAudioBuffer(decodedBuffer);
       const waveformPeaks = extractWaveformPeaks(monoBuffer, 48);
 
+      let lastReportedPct = 0;
       const oggBlob = await encodeAudioBufferToOggOpus(
         monoBuffer,
         { bitrate: origBitrate },
         (pct) => {
-          setItems((prev) =>
-            prev.map((it) =>
-              it.id === itemToProcess.id ? { ...it, progress: 35 + Math.round(pct * 0.6) } : it
-            )
-          );
+          if (pct === 100 || pct - lastReportedPct >= 4) {
+            lastReportedPct = pct;
+            setItems((prev) =>
+              prev.map((it) =>
+                it.id === itemToProcess.id ? { ...it, progress: 35 + Math.round(pct * 0.6) } : it
+              )
+            );
+          }
         }
       );
 
-      await yieldToMain();
+      await yieldToMain(true);
 
       setItems((prev) => {
         const keepRawBuffer = prev.length <= MAX_IN_MEMORY_BUFFERS;
@@ -188,6 +192,20 @@ export function useTgVoiceQueue() {
     );
   }, []);
 
+  // Update individual echo level
+  const updateEchoLevel = useCallback((id: string, echoLevel: number) => {
+    setItems((prev) =>
+      prev.map((it) => (it.id === id ? { ...it, echoLevel } : it))
+    );
+  }, []);
+
+  // Set echo level across all items
+  const setAllEchoLevel = useCallback((echoLevel: number) => {
+    setItems((prev) =>
+      prev.map((it) => ({ ...it, echoLevel }))
+    );
+  }, []);
+
   return {
     items,
     setItems,
@@ -196,6 +214,8 @@ export function useTgVoiceQueue() {
     clearAll,
     retryItem,
     updateBitrate,
+    updateEchoLevel,
+    setAllEchoLevel,
     cancelPending,
     totalCount,
     readyCount,

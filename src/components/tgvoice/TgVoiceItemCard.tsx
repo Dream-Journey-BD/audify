@@ -8,6 +8,7 @@ import {
   Loader2,
   FileAudio,
   FileVideo,
+  Waves,
 } from 'lucide-react';
 import { TgVoiceItem } from '../../types';
 import { formatTimeCode } from '../../utils/audio/context';
@@ -16,24 +17,28 @@ interface TgVoiceItemCardProps {
   item: TgVoiceItem;
   isPlaying: boolean;
   currentTime: number;
+  masterEchoLevel?: number;
   onTogglePlay: (id: string) => void;
   onSeek: (id: string, time: number) => void;
   onDownloadSingle: (item: TgVoiceItem) => void;
   onRemove: (id: string) => void;
   onRetry: (item: TgVoiceItem) => void;
   onBitrateChange?: (id: string, bitrate: number | 'original') => void;
+  onEchoChange?: (id: string, echoLevel: number) => void;
 }
 
 export const TgVoiceItemCard: React.FC<TgVoiceItemCardProps> = ({
   item,
   isPlaying,
   currentTime,
+  masterEchoLevel = 0,
   onTogglePlay,
   onSeek,
   onDownloadSingle,
   onRemove,
   onRetry,
   onBitrateChange,
+  onEchoChange,
 }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const isVideo =
@@ -199,63 +204,117 @@ export const TgVoiceItemCard: React.FC<TgVoiceItemCardProps> = ({
         )}
 
         {item.status === 'ready' && (
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Round Telegram Voice Play/Pause Button */}
-            <button
-              id={`play-btn-${item.id}`}
-              onClick={() => onTogglePlay(item.id)}
-              className="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 hover:from-sky-300 hover:to-sky-500 text-neutral-950 flex items-center justify-center shrink-0 shadow-lg shadow-sky-500/25 transition-transform active:scale-95 cursor-pointer"
-              title={isPlaying ? 'Pause' : 'Play preview'}
-            >
-              {isPlaying ? (
-                <Pause className="w-5 h-5 fill-neutral-950" />
-              ) : (
-                <Play className="w-5 h-5 fill-neutral-950 ml-0.5" />
-              )}
-            </button>
-
-            {/* Telegram-style Scrubbable Waveform Bars */}
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <div
-                ref={waveformRef}
-                onClick={handleWaveformClick}
-                className="h-9 flex items-center justify-between gap-[2px] sm:gap-1 px-1 py-1 rounded-lg hover:bg-neutral-800/40 cursor-pointer transition-colors select-none"
-                title="Click to seek"
+          <>
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* Round Telegram Voice Play/Pause Button */}
+              <button
+                id={`play-btn-${item.id}`}
+                onClick={() => onTogglePlay(item.id)}
+                className="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 hover:from-sky-300 hover:to-sky-500 text-neutral-950 flex items-center justify-center shrink-0 shadow-lg shadow-sky-500/25 transition-transform active:scale-95 cursor-pointer"
+                title={isPlaying ? 'Pause' : 'Play preview'}
               >
-                {(item.waveformPeaks && item.waveformPeaks.length > 0
-                  ? item.waveformPeaks
-                  : Array.from({ length: 48 }, () => 0.4)
-                ).map((peak, idx, arr) => {
-                  const barFraction = idx / arr.length;
-                  const isPast = barFraction <= progressFraction;
+                {isPlaying ? (
+                  <Pause className="w-5 h-5 fill-neutral-950" />
+                ) : (
+                  <Play className="w-5 h-5 fill-neutral-950 ml-0.5" />
+                )}
+              </button>
 
-                  return (
-                    <div
-                      key={idx}
-                      className="flex-1 flex items-center justify-center h-full"
-                    >
+              {/* Telegram-style Scrubbable Waveform Bars */}
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div
+                  ref={waveformRef}
+                  onClick={handleWaveformClick}
+                  className="h-9 flex items-center justify-between gap-[2px] sm:gap-1 px-1 py-1 rounded-lg hover:bg-neutral-800/40 cursor-pointer transition-colors select-none"
+                  title="Click to seek"
+                >
+                  {(item.waveformPeaks && item.waveformPeaks.length > 0
+                    ? item.waveformPeaks
+                    : Array.from({ length: 48 }, () => 0.4)
+                  ).map((peak, idx, arr) => {
+                    const barFraction = idx / arr.length;
+                    const isPast = barFraction <= progressFraction;
+
+                    return (
                       <div
-                        className={`w-full max-w-[4px] rounded-full transition-colors duration-100 ${
-                          isPast
-                            ? 'bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.4)]'
-                            : 'bg-neutral-700 hover:bg-neutral-600'
-                        }`}
-                        style={{ height: `${Math.round(peak * 100)}%` }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+                        key={idx}
+                        className="flex-1 flex items-center justify-center h-full"
+                      >
+                        <div
+                          className={`w-full max-w-[4px] rounded-full transition-colors duration-100 ${
+                            isPast
+                              ? 'bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.4)]'
+                              : 'bg-neutral-700 hover:bg-neutral-600'
+                          }`}
+                          style={{ height: `${Math.round(peak * 100)}%` }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
 
-              {/* Time Codes: Elapsed & Total */}
-              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1">
-                <span className={isPlaying ? 'text-sky-400 font-semibold' : ''}>
-                  {isPlaying ? formatTimeCode(currentTime, false) : '00:00'}
-                </span>
-                <span>{formatTimeCode(item.duration, false)}</span>
+                {/* Time Codes: Elapsed & Total */}
+                <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1">
+                  <span className={isPlaying ? 'text-sky-400 font-semibold' : ''}>
+                    {isPlaying ? formatTimeCode(currentTime, false) : '00:00'}
+                  </span>
+                  <span>{formatTimeCode(item.duration, false)}</span>
+                </div>
               </div>
             </div>
-          </div>
+
+            {/* Individual Item Echo Controller with Real-Time Audition */}
+            <div className="mt-3 pt-2.5 border-t border-neutral-800/70 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Waves className={`w-3.5 h-3.5 shrink-0 ${masterEchoLevel > 0 ? 'text-sky-400/70' : 'text-sky-400'}`} />
+                <span className="text-[11px] font-medium text-neutral-300 shrink-0">Echo:</span>
+                <input
+                  id={`echo-slider-${item.id}`}
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={masterEchoLevel > 0 ? masterEchoLevel : (item.echoLevel ?? 0)}
+                  disabled={masterEchoLevel > 0}
+                  onChange={(e) => onEchoChange?.(item.id, parseFloat(e.target.value))}
+                  className={`w-full max-w-[130px] sm:max-w-[170px] h-1.5 rounded-lg appearance-none accent-sky-400 ${
+                    masterEchoLevel > 0
+                      ? 'bg-neutral-800 opacity-60 cursor-not-allowed'
+                      : 'bg-neutral-800 cursor-pointer'
+                  }`}
+                  title={
+                    masterEchoLevel > 0
+                      ? `Master Echo is active (${Math.round(masterEchoLevel * 100)}%). Adjust via Master Echo Controller above.`
+                      : `Adjust Echo for ${item.originalName}: ${Math.round((item.echoLevel ?? 0) * 100)}% (live real-time preview during playback)`
+                  }
+                />
+                <span className="text-[11px] font-mono text-sky-400 font-semibold w-8 shrink-0">
+                  {Math.round((masterEchoLevel > 0 ? masterEchoLevel : (item.echoLevel ?? 0)) * 100)}%
+                </span>
+              </div>
+
+              {masterEchoLevel > 0 ? (
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20 font-semibold">
+                    Master Active
+                  </span>
+                </div>
+              ) : (item.echoLevel ?? 0) > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => onEchoChange?.(item.id, 0)}
+                  className="text-[10px] text-neutral-400 hover:text-neutral-200 px-2 py-0.5 rounded bg-neutral-800/90 hover:bg-neutral-800 border border-neutral-700/60 transition-colors cursor-pointer shrink-0 font-mono"
+                  title="Reset to 0% (Dry audio)"
+                >
+                  Reset
+                </button>
+              ) : (
+                <span className="text-[10px] text-neutral-500 font-mono shrink-0 px-1">
+                  Dry
+                </span>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

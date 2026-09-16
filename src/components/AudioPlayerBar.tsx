@@ -7,6 +7,8 @@ import {
   FileArchive,
   Tag,
   RotateCcw,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { AppLanguage, AudioSegment } from '../types';
 import { translations } from '../utils/translations';
@@ -36,10 +38,12 @@ export const AudioPlayerBar: React.FC<AudioPlayerBarProps> = ({
   isLooping,
   currentTime,
   totalDuration,
+  volume,
   segments,
   onPlayPause,
   onStop,
   onToggleLoop,
+  onChangeVolume,
   onOpenExportModal,
   onOpenAudioMetadata,
   onReset,
@@ -105,6 +109,37 @@ export const AudioPlayerBar: React.FC<AudioPlayerBarProps> = ({
             <span className="text-neutral-500 mx-1.5">/</span>
             <span className="text-neutral-400">{formatTimeCode(totalDuration)}</span>
           </div>
+
+          {/* Master Output Volume Control */}
+          {onChangeVolume && (
+            <div className="hidden md:flex items-center gap-2 h-10 sm:h-11 px-3 bg-neutral-950/70 rounded-xl border border-neutral-800">
+              <button
+                type="button"
+                onClick={() => onChangeVolume((volume || 1.0) > 0 ? 0 : 1.0)}
+                className="text-neutral-400 hover:text-amber-400 transition-colors cursor-pointer"
+                title={(volume || 1.0) === 0 ? 'Unmute' : 'Mute'}
+              >
+                {(volume || 1.0) === 0 ? (
+                  <VolumeX className="w-4 h-4 text-red-400" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-neutral-300" />
+                )}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1.5"
+                step="0.05"
+                value={volume ?? 1.0}
+                onChange={(e) => onChangeVolume(parseFloat(e.target.value))}
+                className="w-20 accent-amber-500 bg-neutral-800 rounded-lg cursor-pointer h-1.5"
+                title={`Master Volume: ${Math.round((volume ?? 1.0) * 100)}%`}
+              />
+              <span className="text-[11px] font-mono text-neutral-400 w-8">
+                {Math.round((volume ?? 1.0) * 100)}%
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Action Controls in Same Unified Row: Reset, Metadata & Export */}

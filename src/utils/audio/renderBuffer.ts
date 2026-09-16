@@ -9,6 +9,102 @@ interface BufferSlice {
 }
 
 /**
+ * Creates a raw stitched AudioBuffer of a segment's sub-ranges with capped internal silence gaps.
+ * Does NOT bake speed, pitch, or volume so that live Web Audio nodes can control them in real time
+ * without doubling effects.
+ */
+export function createStitchedSubRangesBuffer(
+  sourceBuffer: AudioBuffer,
+  segment: AudioSegment,
+  defaultMaxGapMs: number = 300
+): AudioBuffer {
+  const sampleRate = sourceBuffer.sampleRate;
+  const numChannels = sourceBuffer.numberOfChannels;
+  const maxGapSec = (segment.maxInternalGapMs ?? defaultMaxGapMs) / 1000;
+
+  const slices: BufferSlice[] = [];
+
+  if (segment.subRanges && segment.subRanges.length > 1) {
+    const sorted = [...segment.subRanges]
+      .map((r) => ({
+        start: Math.max(segment.start, Math.min(segment.end, r.start)),
+        end: Math.max(segment.start, Math.min(segment.end, r.end)),
+      }))
+      .filter((r) => r.end - r.start > 0.005)
+      .sort((a, b) => a.start - b.start);
+
+    for (let i = 0; i < sorted.length; i++) {
+      const r = sorted[i];
+      const rStart = Math.max(0, Math.min(r.start, sourceBuffer.duration));
+      const rEnd = Math.max(rStart, Math.min(r.end, sourceBuffer.duration));
+      const startSample = Math.floor(rStart * sampleRate);
+      const count = Math.max(0, Math.floor(rEnd * sampleRate) - startSample);
+      if (count > 0) {
+        slices.push({ startSample, sampleCount: count });
+      }
+
+      if (i < sorted.length - 1) {
+        const next = sorted[i + 1];
+        const nextStart = Math.max(segment.start, Math.min(next.start, sourceBuffer.duration));
+        const rawGapSec = Math.max(0, nextStart - rEnd);
+        const effectiveGapSec = Math.min(rawGapSec, maxGapSec);
+        if (effectiveGapSec > 0.002) {
+          const gapStartSample = Math.floor(rEnd * sampleRate);
+          const gapCount = Math.min(
+            Math.floor(effectiveGapSec * sampleRate),
+            Math.floor((sourceBuffer.duration - rEnd) * sampleRate)
+          );
+          if (gapCount > 0) {
+            slices.push({ startSample: gapStartSample, sampleCount: gapCount });
+          }
+        }
+      }
+    }
+  }
+
+  if (slices.length === 0) {
+    const startSec = Math.max(0, Math.min(segment.start, sourceBuffer.duration));
+    const endSec = Math.max(startSec + 0.01, Math.min(segment.end, sourceBuffer.duration));
+    const startSample = Math.floor(startSec * sampleRate);
+    const count = Math.max(128, Math.floor(endSec * sampleRate) - startSample);
+    slices.push({ startSample, sampleCount: count });
+  }
+
+  const totalRawSamples = slices.reduce((acc, sl) => acc + sl.sampleCount, 0);
+
+  const stitchedBuffer = getAudioContext().createBuffer(
+    numChannels,
+    Math.max(128, totalRawSamples),
+    sampleRate
+  );
+
+  for (let c = 0; c < numChannels; c++) {
+    const srcData = sourceBuffer.getChannelData(c);
+    const destData = stitchedBuffer.getChannelData(c);
+    let offset = 0;
+
+    for (const sl of slices) {
+      for (let i = 0; i < sl.sampleCount; i++) {
+        let val = srcData[sl.startSample + i] || 0;
+        if (offset > 0 && i < Math.floor(sampleRate * 0.005)) {
+          const factor = i / Math.floor(sampleRate * 0.005);
+          val *= factor;
+        }
+        const remaining = sl.sampleCount - 1 - i;
+        if (offset + sl.sampleCount < totalRawSamples && remaining < Math.floor(sampleRate * 0.005)) {
+          const factor = remaining / Math.floor(sampleRate * 0.005);
+          val *= factor;
+        }
+        destData[offset + i] = val;
+      }
+      offset += sl.sampleCount;
+    }
+  }
+
+  return stitchedBuffer;
+}
+
+/**
  * Render a single segment to AudioBuffer with speed, pitch and volume effects,
  * respecting capped internal silence gaps when sub-ranges exist.
  */

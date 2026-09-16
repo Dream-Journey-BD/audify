@@ -11,6 +11,7 @@ import {
 import {
   getAudioContext,
   decodeAudioFile,
+  decodeAudioFileWithProgress,
   detectSilenceSegments,
   detectSilenceSegmentsAsync,
   cropAudioBuffer,
@@ -21,6 +22,8 @@ import {
   mergeMultipleAudioSegments,
   detectAndCompressSegmentInternalGaps,
   renderSegmentToAudioBuffer,
+  createStitchedSubRangesBuffer,
+  mediaSessionManager,
 } from './utils/audioEngine';
 import { yieldToMain } from './utils/asyncScheduler';
 import { translations } from './utils/translations';
@@ -39,6 +42,7 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { TaskProgressModal } from './components/TaskProgressModal';
 import { LoudnessIntelligenceSuite } from './components/intelligence/LoudnessIntelligenceSuite';
 import { TgVoiceSuite } from './components/tgvoice/TgVoiceSuite';
+import { AudioSplitterSuite } from './components/splitter/AudioSplitterSuite';
 
 export default function App() {
   // Application Language state (Default to 'en' as requested)
@@ -47,6 +51,7 @@ export default function App() {
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
+  const [audioDecodingProgress, setAudioDecodingProgress] = useState<{ percent: number; stage: string } | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isCropped, setIsCropped] = useState<boolean>(false);
   const [isAudioMetadataModalOpen, setIsAudioMetadataModalOpen] = useState<boolean>(false);
@@ -422,7 +427,12 @@ export default function App() {
     setPlayingSegmentId(null);
     setPlayingSubPartKey(null);
     playTargetEndRef.current = null;
-  }, []);
+    mediaSessionManager.update({
+      title: fileName || 'Audify Studio',
+      artist: 'Audify Silence Slicer',
+      isPlaying: false,
+    });
+  }, [fileName]);
 
   // Real-time audio effects synchronization during live playback
   useEffect(() => {
@@ -498,6 +508,31 @@ export default function App() {
         setPlayingSubPartKey(null);
       }
 
+      // Register Chrome / OS media notification
+      mediaSessionManager.update({
+        title: segmentId
+          ? (segments.find((s) => s.id === segmentId)?.customName || `Segment - ${fileName}`)
+          : (fileName || 'Audify Studio'),
+        artist: 'Audify Web Workstation',
+        album: 'Silence Slicer',
+        duration: audioBuffer.duration,
+        currentTime: validOffset,
+        playbackRate: effectiveSpeed,
+        isPlaying: true,
+        onPlay: () => {
+          if (currentTime >= (audioBuffer?.duration || 0)) {
+            playAudioFrom(0);
+          } else {
+            playAudioFrom(currentTime);
+          }
+        },
+        onPause: () => stopAudioNode(),
+        onStop: () => stopAudioNode(),
+        onSeek: (target) => handleSeek(target),
+        onSeekBackward: (sec = 5) => handleSeek(Math.max(0, currentTime - sec)),
+        onSeekForward: (sec = 5) => handleSeek(Math.min(audioBuffer.duration, currentTime + sec)),
+      });
+
       const updateLoop = () => {
         if (!sourceNodeRef.current) return;
         const now = ctx.currentTime;
@@ -550,7 +585,7 @@ export default function App() {
     }
   };
 
-  // Play specific segment solo (renders compound segments identically to export for 100% preview fidelity)
+  // Play specific segment solo (respects merged sub-ranges and applies effects dynamically without doubling)
   const handlePlaySegment = async (segment: AudioSegment) => {
     setActiveSegmentId(segment.id);
     setCurrentTime(segment.start);
@@ -563,34 +598,42 @@ export default function App() {
           await ctx.resume();
         }
 
-        const rendered = await renderSegmentToAudioBuffer(
+        const stitched = createStitchedSubRangesBuffer(
           audioBuffer,
           segment,
-          globalEffects,
           segment.maxInternalGapMs || silenceSettings.maxInternalGapMs || 300
         );
 
         const source = ctx.createBufferSource();
-        source.buffer = rendered;
+        source.buffer = stitched;
+
+        const effectiveSpeed = (segment.speed || 1.0) * (globalEffects.speed || 1.0);
+        const effectivePitch = (segment.pitch || 0) + (globalEffects.pitch || 0);
+        const effectiveVolume = masterVolume * (globalEffects.volume || 1.0) * (segment.volume ?? 1.0);
+
+        source.playbackRate.value = effectiveSpeed;
+        source.detune.value = effectivePitch * 100;
 
         const gain = ctx.createGain();
-        gain.gain.value = masterVolume;
+        gain.gain.value = effectiveVolume;
         source.connect(gain);
         gain.connect(ctx.destination);
 
         sourceNodeRef.current = source;
         gainNodeRef.current = gain;
+        currentSpeedRef.current = effectiveSpeed;
 
         source.start(0);
         setIsPlaying(true);
         setPlayingSegmentId(segment.id);
+        setPlayingSubPartKey(null);
 
         const startRealTime = ctx.currentTime;
-        const dur = rendered.duration;
+        const dur = stitched.duration;
 
         const updateLoop = () => {
           if (!sourceNodeRef.current) return;
-          const elapsed = ctx.currentTime - startRealTime;
+          const elapsed = (ctx.currentTime - startRealTime) * currentSpeedRef.current;
           if (elapsed >= dur) {
             stopAudioNode();
             return;
@@ -621,17 +664,23 @@ export default function App() {
     try {
       setIsLoadingAudio(true);
       setAudioError(null);
+      setAudioDecodingProgress({ percent: 10, stage: 'Reading file bytes...' });
       stopAudioNode();
 
-      const decoded = await decodeAudioFile(file);
+      const decoded = await decodeAudioFileWithProgress(file, (p) => {
+        setAudioDecodingProgress(p);
+      });
       originalAudioBufferRef.current = decoded;
       setAudioBuffer(decoded);
       setFileName(file.name);
       setCurrentTime(0);
       setIsCropped(false);
 
-      // Auto detect silence segments on upload
-      const initialSegs = detectSilenceSegments(decoded, silenceSettings);
+      setAudioDecodingProgress({ percent: 92, stage: 'Analyzing audio speech segments...' });
+      await yieldToMain();
+
+      // Auto detect silence segments on upload using time-sliced non-blocking detection
+      const initialSegs = await detectSilenceSegmentsAsync(decoded, silenceSettings);
       setSegments(initialSegs);
       setHistory([initialSegs]);
       setHistoryIndex(0);
@@ -666,9 +715,10 @@ export default function App() {
       }
     } catch (err) {
       console.error(err);
-      setAudioError('Failed to load audio file. Please provide a valid MP3 or WAV file.');
+      setAudioError('Failed to load audio file. Please provide a valid MP3, WAV, M4A, or OGG file.');
     } finally {
       setIsLoadingAudio(false);
+      setAudioDecodingProgress(null);
     }
   };
 
@@ -1195,6 +1245,7 @@ export default function App() {
 
   // Reset handlers for top shortcuts and bottom bars across all tools
   const voiceLevelerResetRef = useRef<(() => void) | null>(null);
+  const splitterResetRef = useRef<(() => void) | null>(null);
   const tgVoiceResetRef = useRef<(() => void) | null>(null);
 
   const handleResetSlicer = useCallback(() => {
@@ -1213,6 +1264,8 @@ export default function App() {
       handleResetSlicer();
     } else if (activeTab === 'intelligence') {
       voiceLevelerResetRef.current?.();
+    } else if (activeTab === 'splitter') {
+      splitterResetRef.current?.();
     } else if (activeTab === 'tg-voice') {
       tgVoiceResetRef.current?.();
     }
@@ -1240,9 +1293,17 @@ export default function App() {
 
       {/* Main Studio View */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
-        {/* Tab 3: TG Voice (Always mounted so uploaded files and processed items are preserved) */}
+        {/* Tab 4: TG Voice (Always mounted so uploaded files and processed items are preserved) */}
         <div className={activeTab === 'tg-voice' ? 'block' : 'hidden'}>
           <TgVoiceSuite onRegisterReset={(fn) => { tgVoiceResetRef.current = fn; }} />
+        </div>
+
+        {/* Tab 3: Audio Splitter (Equal parts, duration, or manual split points) */}
+        <div className={activeTab === 'splitter' ? 'block' : 'hidden'}>
+          <AudioSplitterSuite
+            lang={lang}
+            onRegisterReset={(fn) => { splitterResetRef.current = fn; }}
+          />
         </div>
 
         {/* Tab 2: Voice Leveler (Always mounted so uploaded files and settings are never lost) */}
@@ -1268,6 +1329,7 @@ export default function App() {
               lang={lang}
               onFileSelected={handleAudioSelected}
               isLoading={isLoadingAudio}
+              decodingProgress={audioDecodingProgress}
               error={audioError}
             />
           ) : (

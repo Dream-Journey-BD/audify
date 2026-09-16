@@ -7,6 +7,7 @@ interface AudioUploaderProps {
   lang: AppLanguage;
   onFileSelected: (file: File) => void;
   isLoading: boolean;
+  decodingProgress?: { percent: number; stage: string } | null;
   error?: string | null;
 }
 
@@ -14,6 +15,7 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
   lang,
   onFileSelected,
   isLoading,
+  decodingProgress,
   error,
 }) => {
   const t = translations[lang || 'en'] || translations.en;
@@ -94,11 +96,27 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
           </div>
 
           <h3 className="text-lg sm:text-xl font-semibold text-neutral-200 group-hover:text-amber-300 transition-colors">
-            {isLoading ? t.uploadDecoding : t.uploadDropText}
+            {isLoading ? (decodingProgress?.stage || t.uploadDecoding) : t.uploadDropText}
           </h3>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-md">
-            {t.uploadDropSubtext}
+            {isLoading ? 'Decompressing audio samples in background without freezing the UI...' : t.uploadDropSubtext}
           </p>
+
+          {/* Decoding Progress Bar */}
+          {isLoading && (
+            <div className="w-full max-w-sm mx-auto mt-4 space-y-1.5 animate-in fade-in">
+              <div className="h-2 w-full bg-neutral-800 rounded-full overflow-hidden border border-neutral-700">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300 rounded-full"
+                  style={{ width: `${Math.max(5, decodingProgress?.percent || 20)}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[11px] font-mono text-neutral-400">
+                <span>{decodingProgress?.stage || 'Reading bytes...'}</span>
+                <span className="text-amber-400 font-bold">{decodingProgress?.percent || 20}%</span>
+              </div>
+            </div>
+          )}
 
           {/* Supported formats */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-6">

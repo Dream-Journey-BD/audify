@@ -102,7 +102,7 @@ export async function audioBufferToWavBlobAsync(
   }
 
   const totalSamples = buffer.length;
-  const CHUNK_SIZE = 80000;
+  const CHUNK_SIZE = 24000;
 
   for (let i = 0; i < totalSamples; i += CHUNK_SIZE) {
     if (shouldCancel && shouldCancel()) {
@@ -121,7 +121,7 @@ export async function audioBufferToWavBlobAsync(
     if (onProgress) {
       onProgress(Math.round((end / totalSamples) * 100));
     }
-    await yieldToMain();
+    await yieldToMain(true);
   }
 
   return new Blob([view], { type: 'audio/wav' });

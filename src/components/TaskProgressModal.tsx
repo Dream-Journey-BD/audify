@@ -58,7 +58,7 @@ export const TaskProgressModal: React.FC<TaskProgressModalProps> = ({
           </div>
           <div className="w-full h-2.5 rounded-full bg-neutral-800 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-150 rounded-full"
+              className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300 ease-out rounded-full"
               style={{ width: `${percent}%` }}
             />
           </div>

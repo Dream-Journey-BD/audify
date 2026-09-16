@@ -148,26 +148,74 @@ export async function resampleAudioBuffer(
  * Applies voice/speech dynamic range compression to smooth peaks and balance volume.
  */
 export async function applySpeechCompression(audioBuffer: AudioBuffer): Promise<AudioBuffer> {
+  return applySpeechEffects(audioBuffer, { compression: true, echoLevel: 0 });
+}
+
+/**
+ * Applies optional speech compression and natural echo effects to an AudioBuffer.
+ * Echo level is 0.0 to 1.0 (default 0).
+ */
+export async function applySpeechEffects(
+  audioBuffer: AudioBuffer,
+  options: { compression?: boolean; echoLevel?: number }
+): Promise<AudioBuffer> {
+  const { compression = false, echoLevel = 0 } = options;
+
+  if (!compression && (!echoLevel || echoLevel <= 0)) {
+    return audioBuffer;
+  }
+
+  const extraTailSeconds = echoLevel > 0 ? 0.8 : 0;
+  const targetLength = Math.ceil((audioBuffer.duration + extraTailSeconds) * audioBuffer.sampleRate);
+
   const offlineCtx = new OfflineAudioContext(
     audioBuffer.numberOfChannels,
-    audioBuffer.length,
+    targetLength,
     audioBuffer.sampleRate
   );
+
   const source = offlineCtx.createBufferSource();
   source.buffer = audioBuffer;
 
-  const compressor = offlineCtx.createDynamicsCompressor();
-  // Transparent voice compression: smooths volume without artifacts
-  compressor.threshold.setValueAtTime(-18, 0);
-  compressor.knee.setValueAtTime(10, 0);
-  compressor.ratio.setValueAtTime(3.0, 0);
-  compressor.attack.setValueAtTime(0.005, 0);
-  compressor.release.setValueAtTime(0.08, 0);
+  let endNode: AudioNode;
 
-  source.connect(compressor);
-  compressor.connect(offlineCtx.destination);
+  if (compression) {
+    const compressor = offlineCtx.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-18, 0);
+    compressor.knee.setValueAtTime(10, 0);
+    compressor.ratio.setValueAtTime(3.0, 0);
+    compressor.attack.setValueAtTime(0.005, 0);
+    compressor.release.setValueAtTime(0.08, 0);
+    compressor.connect(offlineCtx.destination);
+    endNode = compressor;
+  } else {
+    endNode = offlineCtx.destination;
+  }
+
+  const dryGain = offlineCtx.createGain();
+  dryGain.gain.setValueAtTime(1.0, 0);
+  source.connect(dryGain);
+  dryGain.connect(endNode);
+
+  if (echoLevel > 0) {
+    const normalizedEcho = Math.min(1.0, Math.max(0, echoLevel));
+    const delay = offlineCtx.createDelay(1.0);
+    delay.delayTime.setValueAtTime(0.22, 0);
+
+    const feedback = offlineCtx.createGain();
+    feedback.gain.setValueAtTime(Math.min(0.60, normalizedEcho * 0.58), 0);
+
+    const wetGain = offlineCtx.createGain();
+    wetGain.gain.setValueAtTime(Math.min(0.72, normalizedEcho * 0.72), 0);
+
+    source.connect(delay);
+    delay.connect(feedback);
+    feedback.connect(delay);
+    delay.connect(wetGain);
+    wetGain.connect(endNode);
+  }
+
   source.start(0);
-
   return await offlineCtx.startRendering();
 }
 
@@ -217,7 +265,8 @@ export async function encodeAudioBufferToOggOpus(
   });
 
   const chunks: Uint8Array[] = [];
-  const chunkSize = 48000 * 2; // Process 2 seconds per chunk for responsive progress
+  // Process 0.4 seconds (19,200 samples at 48kHz) per chunk for continuous fluid UI progress
+  const chunkSize = Math.max(9600, Math.floor(sampleRate * 0.4));
   let offset = 0;
 
   while (offset < totalSamples) {
@@ -235,8 +284,8 @@ export async function encodeAudioBufferToOggOpus(
       onProgress(pct);
     }
 
-    // Yield to keep the browser responsive
-    await yieldToMain();
+    // Yield with guaranteed render interval to prevent phone UI stutter
+    await yieldToMain(true);
   }
 
   // Flush remaining Opus pages + End of Stream (EOS)
@@ -284,7 +333,7 @@ export async function exportMultipleOggZip(
       const pct = Math.round(((i + 1) / items.length) * 50);
       onProgress(pct, item.outputName);
     }
-    await yieldToMain();
+    await yieldToMain(true);
   }
 
   const zipBlob = await zip.generateAsync(

@@ -6,10 +6,11 @@ import { yieldToMain } from '../asyncScheduler';
  * Converts Float32Array (-1.0 to 1.0) to Int16Array (-32768 to 32767) for MP3 encoding
  */
 function convertFloat32ToInt16(input: Float32Array): Int16Array {
-  const output = new Int16Array(input.length);
-  for (let i = 0; i < input.length; i++) {
-    const s = Math.max(-1, Math.min(1, input[i]));
-    output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+  const len = input.length;
+  const output = new Int16Array(len);
+  for (let i = 0; i < len; i++) {
+    const s = input[i];
+    output[i] = s < -1 ? -32768 : s > 1 ? 32767 : s < 0 ? (s * 0x8000) | 0 : (s * 0x7fff) | 0;
   }
   return output;
 }
@@ -75,7 +76,7 @@ export async function audioBufferToMp3BlobAsync(
   const sampleBlockSize = 1152;
   const length = leftChannel.length;
   const totalBlocks = Math.ceil(length / sampleBlockSize);
-  const CHUNK_BLOCKS = 30;
+  const CHUNK_BLOCKS = 20;
 
   let blockIndex = 0;
   for (let i = 0; i < length; i += sampleBlockSize) {
@@ -101,7 +102,7 @@ export async function audioBufferToMp3BlobAsync(
       if (onProgress) {
         onProgress(Math.min(99, Math.round((blockIndex / totalBlocks) * 100)));
       }
-      await yieldToMain();
+      await yieldToMain(true);
     }
   }
 

@@ -9,7 +9,7 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "vite build && gh-pages -d dist -m 'Manual deploy to GitHub Pages'",
+    "deploy": "vite build && gh-pages -d dist -m \"Manual deploy to GitHub Pages\"",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },

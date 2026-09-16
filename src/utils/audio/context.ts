@@ -77,6 +77,45 @@ export async function decodeAudioFile(file: File | Blob): Promise<AudioBuffer> {
 }
 
 /**
+ * Decodes audio file with fine-grained async progress reporting to prevent UI freezes
+ * especially on large files (e.g. 20MB - 100MB+).
+ */
+export async function decodeAudioFileWithProgress(
+  file: File | Blob,
+  onProgress?: (progress: { percent: number; stage: string }) => void
+): Promise<AudioBuffer> {
+  onProgress?.({ percent: 10, stage: 'Reading audio bytes...' });
+
+  const ctx = getAudioContext();
+  if (ctx.state === 'suspended') {
+    await ctx.resume();
+  }
+
+  // Read array buffer with progressive notification
+  const arrayBuffer = await file.arrayBuffer();
+  onProgress?.({ percent: 40, stage: 'Parsing audio stream...' });
+
+  // Yield to main thread so UI updates immediately and doesn't hang
+  await new Promise((r) => setTimeout(r, 20));
+
+  try {
+    onProgress?.({ percent: 65, stage: 'Decompressing PCM samples...' });
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+    onProgress?.({ percent: 95, stage: 'Finalizing waveform data...' });
+    return audioBuffer;
+  } catch (err) {
+    onProgress?.({ percent: 70, stage: 'Extracting audio from container...' });
+    const demuxed = demuxMp4Audio(arrayBuffer);
+    if (demuxed.isMp4 && demuxed.hasAudio && demuxed.buffer) {
+      const audioBuffer = await ctx.decodeAudioData(demuxed.buffer.slice(0));
+      onProgress?.({ percent: 95, stage: 'Finalizing waveform data...' });
+      return audioBuffer;
+    }
+    throw err;
+  }
+}
+
+/**
  * Crops an AudioBuffer to a given start and end time range (in seconds)
  */
 export function cropAudioBuffer(

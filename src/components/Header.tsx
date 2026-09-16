@@ -34,6 +34,11 @@ export const Header: React.FC<HeaderProps> = ({
       proBadge: 'bg-violet-500/10 text-violet-400 border-violet-500/30',
       iconText: 'text-violet-400',
     },
+    splitter: {
+      shadow: 'shadow-emerald-500/15',
+      proBadge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+      iconText: 'text-emerald-400',
+    },
     'tg-voice': {
       shadow: 'shadow-sky-500/15',
       proBadge: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
